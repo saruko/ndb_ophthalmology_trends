@@ -1,0 +1,34 @@
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# IDE and tool cache
+.claude/
+.gemini/
+.agents/
+.vscode/
+.idea/
+
+# Word documents and PDFs (Manuscripts and References)
+*.docx
+*.pdf
+*.gdoc
+
+# References directories
+**/参考文献/
+**/類似研究/
+**/references/
+
+# Data files (To prevent leaking NDB or patient data)
+data/
+*.csv
+*.xlsx
+*.xls
+*.json
+*.zip
+!configs/ndb_mapping.json
+
+# Local configurations / credentials
+.env
+*.local
