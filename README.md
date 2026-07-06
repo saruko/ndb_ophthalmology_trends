@@ -47,6 +47,12 @@ NDB_眼科診療トレンド解析_研究計画書/
 │   └── processed/          # 前処理および統計解析結果の出力先
 │       ├── plots/          # 生成された可視化グラフ画像 (.png)
 │       └── *.csv / *.txt   # 解析統計値 (APC, ジニ係数, パネル回帰レポート等)
+├── allergy解析/            # サブ解析: 抗アレルギー点眼薬のトレンド・地域格差解析
+│   ├── run_allergy_pipeline.py
+│   ├── src/               # 前処理・解析・可視化モジュール
+│   └── processed/         # 解析結果出力
+├── 眼腫瘍解析/             # サブ解析: 眼腫瘍手術の年齢階級別・Poisson回帰解析
+│   └── scripts/           # 年齢層別化・rate換算・trend testスクリプト
 └── src/
     ├── preprocess.py       # データの前処理・クレンジング・マージ (縦持ち変換、秘匿値補完)
     ├── analysis.py         # 統計解析 (APC計算、ジニ係数/CV算出、相関分析、固定効果パネル回帰)
@@ -105,6 +111,12 @@ python generate_manuscript_docx.py
 | `panel_regression_summary.csv` | **パネル回帰の係数一覧**。コード×変数別の回帰係数・t値・p値・R²(within) | code, variable, coefficient, std_err, t_stat, p_value, r2_within | Table 5 |
 | `panel_regression_*_report.txt` | **パネル回帰の詳細レポート**（テキスト形式、各コード別） | — | 論文補足資料 |
 | `analysis_summary_report.txt` | **全解析結果のまとめ**（テキスト形式、人間が読む用） | — | 結果の確認・報告用 |
+| `panel_regression_summary_sensitivity_survey_years.csv` | **感度分析**。共変量が実測値の調査年のみ（偶数年）で推定したパネル回帰 | 主解析と同一構造 | Table S1（補足） |
+
+### 4.2 サブ解析ディレクトリ
+- **`data/processed/sub_analysis/`**: K280・K268・K282の内訳別（サブグループ別）パネル回帰と感度分析の結果
+- **`allergy解析/processed/`**: 抗アレルギー点眼薬の全解析結果（詳細は [allergy解析/README.md](allergy解析/README.md) 参照）
+- **`眼腫瘍解析/`**: 眼腫瘍手術の年齢階級別・Poisson回帰解析（詳細は [眼腫瘍解析/scripts/README.md](眼腫瘍解析/scripts/README.md) 参照）
 
 ---
 
