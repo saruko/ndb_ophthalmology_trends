@@ -38,6 +38,12 @@ ANTI_HIST_CODES   = {"OLOPATADINE", "EPINASTINE", "KETOTIFEN", "LEVOCASTINE"}
 MED_RELEASE_CODES = {"CROMOGLICATE", "TRANILAST", "PEMIROLAST", "IBUDILAST", "ACITAZANOLAST"}
 IMMUNO_CODES      = {"CYCLOSPORINE", "TACROLIMUS"}
 
+# 全身性アレルギー治療薬（注射薬）: 注射薬ファイルから抽出
+INJECTION_DRUG_CATEGORIES = [
+    ("ZOLEAIR",   "ゾレア（オマリズマブ）",     ["ゾレア"]),
+    ("DUPIXENT",  "デュピクセント（デュピルマブ）", ["デュピクセント"]),
+]
+
 
 def classify_drug(drug_name: str) -> tuple[str, str] | None:
     """医薬品名から薬剤カテゴリコードと名称を返す。該当なしはNone。"""
@@ -232,6 +238,129 @@ def preprocess_allergy(raw_dir: str, covariate_path: str,
     df_merged.to_csv(out_file, index=False, encoding="utf-8-sig")
     print(f"Eye drop dataset saved to {out_file} (shape: {df_merged.shape})")
 
+    return df_merged
+
+
+def classify_injection_drug(drug_name: str) -> tuple[str, str] | None:
+    """注射薬の医薬品名からカテゴリコードと名称を返す。"""
+    for code, name, patterns in INJECTION_DRUG_CATEGORIES:
+        if any(p in drug_name for p in patterns):
+            return code, name
+    return None
+
+
+def load_chusha_sheet(year: int, file_path: str, sheet_name: str,
+                      imputation_strategy: str = "zero") -> pd.DataFrame:
+    """注射薬Excelの1シートから、DUPIXENT/ZOLEAIRデータを抽出する。"""
+    df = pd.read_excel(file_path, sheet_name=sheet_name, header=None)
+
+    row2 = [str(x) for x in df.iloc[2]]
+    total_col = next((i for i, v in enumerate(row2) if "総計" in v), None)
+    if total_col is None:
+        return pd.DataFrame()
+
+    df[0] = df[0].ffill()
+
+    row3 = [str(x).strip() for x in df.iloc[3]]
+    pref_col_map: dict[int, str] = {}
+    for col_idx in range(total_col + 1, min(total_col + 48, df.shape[1])):
+        if col_idx < len(row3) and row3[col_idx] in PREFECTURES:
+            pref_col_map[col_idx] = row3[col_idx]
+    if not pref_col_map:
+        for i, pref in enumerate(PREFECTURES):
+            col_idx = total_col + 1 + i
+            if col_idx < df.shape[1]:
+                pref_col_map[col_idx] = pref
+
+    np.random.seed(year)
+    records = []
+    for r_idx in range(4, len(df)):
+        drug_name = str(df.iloc[r_idx, 3]).strip()
+        result = classify_injection_drug(drug_name)
+        if result is None:
+            continue
+        category_code, category_name = result
+        for col_idx, pref_name in pref_col_map.items():
+            raw_val = df.iloc[r_idx, col_idx]
+            count = clean_count_value(raw_val, imputation_strategy)
+            records.append({
+                "year": year, "prefecture": pref_name,
+                "code": category_code, "procedure_name": category_name,
+                "count": count,
+            })
+    return pd.DataFrame(records)
+
+
+def load_chusha_year(year: int, file_path: str,
+                     imputation_strategy: str = "zero") -> pd.DataFrame:
+    """1年分の注射薬ファイルからDUPIXENT/ZOLEAIRを抽出・合算する。"""
+    print(f"Processing chusha year {year} from {file_path}...")
+    xl = pd.ExcelFile(file_path)
+    target_sheets = [s for s in xl.sheet_names if "注射" in s]
+    dfs = []
+    for sheet in target_sheets:
+        df_sheet = load_chusha_sheet(year, file_path, sheet, imputation_strategy)
+        if not df_sheet.empty:
+            dfs.append(df_sheet)
+    if not dfs:
+        return pd.DataFrame()
+    df_all = pd.concat(dfs, ignore_index=True)
+    return df_all.groupby(
+        ["year", "prefecture", "code", "procedure_name"], as_index=False
+    )["count"].sum()
+
+
+def preprocess_injection_drugs(raw_dir: str, covariate_path: str,
+                               output_dir: str,
+                               imputation_strategy: str = "zero") -> pd.DataFrame:
+    """DUPIXENT/ZOLEAIRの前処理。注射薬ファイルから抽出し共変量とマージする。"""
+    print(f"Starting preprocess_injection_drugs with strategy: {imputation_strategy}...")
+
+    chusha_files = glob.glob(os.path.join(raw_dir, "ndb_chusha_*.*"))
+    drug_file_2024 = os.path.join(raw_dir, "ndb_chusha_drug_2024.xlsx")
+    if os.path.exists(drug_file_2024):
+        chusha_files.append(drug_file_2024)
+
+    years_map: dict[int, str] = {}
+    for f in chusha_files:
+        m = re.search(r"ndb_chusha(?:_drug)?_(\d{4})\.(xlsx|xls)", os.path.basename(f))
+        if m:
+            year = int(m.group(1))
+            xl = pd.ExcelFile(f)
+            if any("注射" in s for s in xl.sheet_names):
+                years_map[year] = f
+
+    if not years_map:
+        print("No chusha files with injection sheets found. Skipping injection drugs.")
+        return pd.DataFrame()
+
+    all_dfs = []
+    for year, file_path in sorted(years_map.items()):
+        df_year = load_chusha_year(year, file_path, imputation_strategy)
+        if not df_year.empty:
+            all_dfs.append(df_year)
+
+    if not all_dfs:
+        print("No DUPIXENT/ZOLEAIR data found.")
+        return pd.DataFrame()
+
+    df_raw = pd.concat(all_dfs, ignore_index=True)
+
+    df_cov = pd.read_csv(covariate_path)
+    df_cov["prefecture"] = df_cov["prefecture"].str.strip()
+    df_raw["prefecture"] = df_raw["prefecture"].str.strip()
+    df_merged = pd.merge(df_raw, df_cov, on=["year", "prefecture"], how="left")
+
+    df_merged["count_per_100k"]        = (df_merged["count"] / df_merged["population_total"]) * 100000
+    df_merged["count_per_100k_65plus"] = (df_merged["count"] / df_merged["population_65plus"]) * 100000
+    df_merged["aging_rate"]            = df_merged["population_65plus"] / df_merged["population_total"]
+    df_merged["docs_per_100k"]         = (df_merged["ophthalmologists"] / df_merged["population_total"]) * 100000
+    df_merged["facilities_per_100k"]   = (df_merged["facilities"] / df_merged["population_total"]) * 100000
+
+    os.makedirs(output_dir, exist_ok=True)
+    out_file = os.path.join(output_dir, f"ndb_processed_injection_allergy_{imputation_strategy}.csv")
+    df_merged.to_csv(out_file, index=False, encoding="utf-8-sig")
+    print(f"Injection drug dataset saved to {out_file} (shape: {df_merged.shape})")
     return df_merged
 
 

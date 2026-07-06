@@ -225,9 +225,9 @@ def analyze_covariates_correlation(df, output_dir):
     print("Saved covariates_correlation_allergy.csv")
     return df_corr
 
-def run_panel_regression(df, output_dir):
+def run_panel_regression(df, output_dir, summary_filename="panel_regression_summary_allergy.csv"):
     """Two-way FE（都道府県＋年固定効果）、都道府県クラスターSEでのパネル回帰"""
-    print("Running panel data regression for anti-allergy eye drops...")
+    print("Running panel data regression...")
 
     regression_summary = []
 
@@ -274,8 +274,8 @@ def run_panel_regression(df, output_dir):
 
     if regression_summary:
         df_reg = pd.DataFrame(regression_summary)
-        df_reg.to_csv(os.path.join(output_dir, "panel_regression_summary_allergy.csv"), index=False, encoding="utf-8-sig")
-        print("Saved panel_regression_summary_allergy.csv")
+        df_reg.to_csv(os.path.join(output_dir, summary_filename), index=False, encoding="utf-8-sig")
+        print(f"Saved {summary_filename}")
         return df_reg
     return None
 

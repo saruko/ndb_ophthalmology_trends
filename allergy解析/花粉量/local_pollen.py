@@ -113,7 +113,7 @@ if __name__ == "__main__":
         data = get_tokyo_pollen(args.year, args.type)
         df = pd.DataFrame(data)
         out_path = f"tmp/local_tokyo_{args.type}_{args.year}.csv"
-        df.to_csv(out_path, index=False, encoding='utf-8')
+        df.to_csv(out_path, index=False, encoding='utf-8-sig')
         print(f"Successfully processed Tokyo data. Output saved to {out_path}")
         print(df)
     except Exception as e:

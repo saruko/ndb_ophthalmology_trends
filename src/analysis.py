@@ -341,7 +341,7 @@ def run_panel_regression(df, output_dir):
     # 共通して実測値が存在する年: 2014, 2020（両方とも実測）
     # 医師数が実測の偶数年かつ施設数が実測の年 = 2014, 2020
     # より広い基準: 医師数が実測の偶数年（施設数は最大3年の補間）
-    survey_years = [2014, 2016, 2018, 2020, 2022]
+    survey_years = [2014, 2016, 2018, 2020, 2022, 2024]
     df_survey = df[df["year"].isin(survey_years)]
     if not df_survey.empty:
         print("Running sensitivity analysis (survey years only: %s)..." % survey_years)

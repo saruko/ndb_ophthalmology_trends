@@ -10,12 +10,36 @@ def download_npo_file(year, pollen_type):
     """
     os.makedirs("tmp", exist_ok=True)
     
-    # 2024年以降はxlsx、2023年以前はxlsの可能性が高いが、フォールバックを含めて処理
+    # 2019〜2022年はWayback Machineからダウンロード
+    if year in [2019, 2020, 2021, 2022]:
+        timestamp_map = {
+            2022: "20230601000000",
+            2021: "20220601000000",
+            2020: "20210601000000",
+            2019: "20200601000000"
+        }
+        ts = timestamp_map[year]
+        url = f"https://web.archive.org/web/{ts}id_/https://pollen-net.com/zennkoku24/{pollen_type}{year}.xls"
+        dest = f"tmp/npo_{pollen_type}{year}.xls"
+        
+        if os.path.exists(dest):
+            return dest
+            
+        print(f"Downloading {year} {pollen_type} from Wayback: {url}...")
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                with open(dest, 'wb') as f:
+                    f.write(response.read())
+            return dest
+        except Exception as e:
+            if os.path.exists(dest):
+                os.remove(dest)
+            raise Exception(f"Failed to download NPO pollen data from Wayback for {year} ({pollen_type}): {e}")
+            
+    # 2023年以降（またはその他）は通常ダウンロード
     exts = [".xlsx", ".xls"]
-    
-    # zennkoku26 (2023年以降) または zennkoku24 (2022年以前)
     base_folder = "zennkoku26" if year >= 2023 else "zennkoku24"
-    
     downloaded_path = None
     last_error = None
     
@@ -23,7 +47,6 @@ def download_npo_file(year, pollen_type):
         url = f"https://pollen-net.com/{base_folder}/{pollen_type}{year}{ext}"
         dest = f"tmp/npo_{pollen_type}{year}{ext}"
         
-        # すでにダウンロード済みの場合はそれを使用
         if os.path.exists(dest):
             return dest
             
@@ -37,7 +60,6 @@ def download_npo_file(year, pollen_type):
             break
         except Exception as e:
             last_error = e
-            # エラーの場合は次の拡張子を試す
             if os.path.exists(dest):
                 os.remove(dest)
                 
@@ -45,6 +67,7 @@ def download_npo_file(year, pollen_type):
         return downloaded_path
     else:
         raise Exception(f"Failed to download NPO pollen data for {year} ({pollen_type}): {last_error}")
+
 
 def parse_npo_excel(file_path, year, pollen_type):
     """
@@ -153,7 +176,7 @@ if __name__ == "__main__":
         data = get_npo_pollen(args.year, args.type)
         df = pd.DataFrame(data)
         out_path = f"tmp/npo_{args.type}_{args.year}.csv"
-        df.to_csv(out_path, index=False, encoding='utf-8')
+        df.to_csv(out_path, index=False, encoding='utf-8-sig')
         print(f"Successfully processed NPO data. Output saved to {out_path}")
         print(df.head(5))
     except Exception as e:

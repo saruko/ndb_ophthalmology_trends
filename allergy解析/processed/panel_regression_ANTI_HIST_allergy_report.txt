@@ -1,18 +1,18 @@
                           PanelOLS Estimation Summary                           
 ================================================================================
-Dep. Variable:         count_per_100k   R-squared:                        0.0262
-Estimator:                   PanelOLS   R-squared (Between):             -1.9981
-No. Observations:                 470   R-squared (Within):              -0.2994
-Date:                Tue, Jun 30 2026   R-squared (Overall):             -1.9292
-Time:                        08:48:52   Log-likelihood                   -4775.7
+Dep. Variable:         count_per_100k   R-squared:                        0.0325
+Estimator:                   PanelOLS   R-squared (Between):             -1.9524
+No. Observations:                 517   R-squared (Within):              -0.3101
+Date:                Tue, Jul 07 2026   R-squared (Overall):             -1.8781
+Time:                        07:39:16   Log-likelihood                   -5281.2
 Cov. Estimator:             Clustered                                           
-                                        F-statistic:                      3.6837
-Entities:                          47   P-value                           0.0122
-Avg Obs:                      10.0000   Distribution:                   F(3,411)
-Min Obs:                      10.0000                                           
-Max Obs:                      10.0000   F-statistic (robust):             2.2005
-                                        P-value                           0.0874
-Time periods:                      10   Distribution:                   F(3,411)
+                                        F-statistic:                      5.1137
+Entities:                          47   P-value                           0.0017
+Avg Obs:                       11.000   Distribution:                   F(3,457)
+Min Obs:                       11.000                                           
+Max Obs:                       11.000   F-statistic (robust):             2.5202
+                                        P-value                           0.0574
+Time periods:                      11   Distribution:                   F(3,457)
 Avg Obs:                       47.000                                           
 Min Obs:                       47.000                                           
 Max Obs:                       47.000                                           
@@ -21,13 +21,13 @@ Max Obs:                       47.000
 =======================================================================================
                      Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
 ---------------------------------------------------------------------------------------
-aging_rate          -2.791e+05  1.196e+05    -2.3329     0.0201  -5.142e+05  -4.392e+04
-docs_per_100k          -277.02     2387.5    -0.1160     0.9077     -4970.2      4416.2
-facilities_per_100k     530.20     3597.0     0.1474     0.8829     -6540.5      7600.9
+aging_rate          -2.939e+05  1.262e+05    -2.3290     0.0203  -5.418e+05  -4.591e+04
+docs_per_100k          -910.13     2420.7    -0.3760     0.7071     -5667.3      3847.0
+facilities_per_100k     2205.6     4016.7     0.5491     0.5832     -5688.0    1.01e+04
 =======================================================================================
 
-F-test for Poolability: 177.25
+F-test for Poolability: 195.26
 P-value: 0.0000
-Distribution: F(55,411)
+Distribution: F(56,457)
 
 Included effects: Entity, Time

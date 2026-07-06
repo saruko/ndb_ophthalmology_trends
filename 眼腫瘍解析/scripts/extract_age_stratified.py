@@ -151,7 +151,7 @@ def main():
     df_all = pd.concat(all_dfs, ignore_index=True)
 
     # ── 生データ出力（5歳刻み・男女別） ──
-    raw_out = os.path.join(OUT_DIR, "眼腫瘍手術_年齢階級別_2014_2023.csv")
+    raw_out = os.path.join(OUT_DIR, "眼腫瘍手術_年齢階級別_2014_2024.csv")
     df_all.sort_values(["year", "k_code_group", "sex", "age_bracket"]).to_csv(
         raw_out, index=False, encoding="utf-8-sig"
     )
@@ -164,7 +164,7 @@ def main():
         .sum()
     )
 
-    group_out = os.path.join(OUT_DIR, "眼腫瘍手術_4群層別化_2014_2023.csv")
+    group_out = os.path.join(OUT_DIR, "眼腫瘍手術_4群層別化_2014_2024.csv")
     df_grouped.sort_values(["k_code_group", "year", "age_group_4"]).to_csv(
         group_out, index=False, encoding="utf-8-sig"
     )
@@ -172,7 +172,7 @@ def main():
 
     # ── 全年齢合計（既存の全国合計値との整合性チェック用） ──
     df_total = df_all.groupby(["year", "k_code_group", "behavior_name"], as_index=False)["count"].sum()
-    total_out = os.path.join(OUT_DIR, "眼腫瘍手術_年齢別合計_整合性チェック用_2014_2023.csv")
+    total_out = os.path.join(OUT_DIR, "眼腫瘍手術_年齢別合計_整合性チェック用_2014_2024.csv")
     df_total.sort_values(["k_code_group", "year"]).to_csv(total_out, index=False, encoding="utf-8-sig")
     print(f"Saved total-check data: {total_out} (shape={df_total.shape})")
 

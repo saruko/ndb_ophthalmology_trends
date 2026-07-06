@@ -28,6 +28,7 @@ data/
 *.json
 *.zip
 !configs/ndb_mapping.json
+**/tmp/
 
 # Local configurations / credentials
 .env

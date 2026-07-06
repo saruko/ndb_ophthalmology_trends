@@ -240,11 +240,12 @@ def load_a400_k282(a400_dir, imputation_strategy="zero"):
     A400_K282_RO_CODES = {"190179210", "190179310", "190195910", "190196010"}
 
     dfs = []
-    for year in range(2016, 2024):
-        fpath = os.path.join(a400_dir, f"a400_pref_{year}.xlsx")
-        if not os.path.exists(fpath):
+    a400_files = glob.glob(os.path.join(a400_dir, "a400_pref_*.xlsx"))
+    for fpath in sorted(a400_files):
+        m = re.search(r"a400_pref_(\d{4})\.xlsx", os.path.basename(fpath))
+        if not m:
             continue
-
+        year = int(m.group(1))
         print(f"Processing A400 year {year} from {fpath}...")
         df_sheet = pd.read_excel(fpath, sheet_name=0, header=None)
 
@@ -315,7 +316,7 @@ def load_ndb_chusha_year(year, file_path, imputation_strategy="zero"):
     sheet_names = excel_file.sheet_names
     
     dfs = []
-    target_sheets = [s for s in sheet_names if '注射薬' in s]
+    target_sheets = [s for s in sheet_names if '注射' in s]
     
     for sheet in target_sheets:
         df_sheet = pd.read_excel(file_path, sheet_name=sheet, header=None)
@@ -419,14 +420,17 @@ def preprocess_all(raw_dir, covariate_path, mapping_path, output_dir, imputation
             years_files[year] = []
         years_files[year].append(f)
         
-    # 注射ファイルの年度マッピング
+    # 注射ファイルの年度マッピング（ndb_chusha_drug_YYYY.xlsx も対象）
     years_chusha = {}
     for f in chusha_files:
-        match = re.search(r"ndb_chusha_(\d{4})\.(xlsx|xls)", os.path.basename(f))
+        match = re.search(r"ndb_chusha(?:_drug)?_(\d{4})\.(xlsx|xls)", os.path.basename(f))
         if not match:
             continue
         year = int(match.group(1))
-        years_chusha[year] = f
+        # 注射薬シートを持つファイルのみ採用（drug版を優先）
+        xl = pd.ExcelFile(f)
+        if any('注射' in s for s in xl.sheet_names):
+            years_chusha[year] = f
         
     if not years_files and not years_chusha:
         raise FileNotFoundError(f"No NDB raw files found in {raw_dir}")

@@ -12,7 +12,7 @@ import pandas as pd
 from linearmodels.panel import PanelOLS
 import statsmodels.api as sm
 
-# 完全10年パネルを形成できる個別薬剤コード（2014-2023）
+# 完全パネルを形成できる個別薬剤コード（全年度で処方実績あり）
 FULL_PANEL_DRUGS = {"OLOPATADINE", "EPINASTINE", "LEVOCASTINE"}
 # 集計カテゴリ（常に全期間利用可能）
 AGGREGATE_CODES = {"ANTI_HIST", "MED_RELEASE", "IMMUNO", "ALLERGY_EYE_TOTAL"}

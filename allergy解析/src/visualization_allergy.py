@@ -90,10 +90,12 @@ def plot_disparity_trends(disparity_csv, output_dir):
     plt.close()
     print(f"Saved disparity plot to {out_path}")
 
-def plot_correlation_scatter(processed_csv, output_dir, target_year=2023):
-    """直近年度（例：2023年）における、アレルギー薬普及率と共変量の散布図"""
-    print(f"Plotting correlation scatters for year {target_year}...")
+def plot_correlation_scatter(processed_csv, output_dir, target_year=None):
+    """直近年度における、アレルギー薬普及率と共変量の散布図"""
     df = pd.read_csv(processed_csv)
+    if target_year is None:
+        target_year = int(df["year"].max())
+    print(f"Plotting correlation scatters for year {target_year}...")
     df_year = df[df["year"] == target_year].copy()
     
     if df_year.empty:
@@ -180,7 +182,7 @@ def visualize_allergy_all(processed_csv_path, output_dir):
         
     # 3. 直近年度の散布図
     if os.path.exists(processed_csv_path):
-        plot_correlation_scatter(processed_csv_path, plot_dir, target_year=2023)
+        plot_correlation_scatter(processed_csv_path, plot_dir)
         
     print("All allergy plots generated successfully!")
 

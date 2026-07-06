@@ -62,6 +62,7 @@ PHYSICIAN_IDS = {
     2018: ("000031889171", "ishi_2018.csv"),    # 平成30年 表21
     2020: ("000032179783", "ishi_2020_t34.csv"),# 令和2年 表7（就業形態別あり）
     2022: ("000040155804", "ishi_2022_t34.csv"),# 令和4年 表34
+    2024: ("000040383787", "ishi_2024.csv"),    # 令和6年 表35
 }
 
 POPULATION_IDS = {
@@ -77,6 +78,7 @@ POPULATION_IDS = {
     2021: ("000032191052", "pop_2021.xlsx"),
     2022: ("000040045497", "pop_2022.xlsx"),
     2023: ("000040166083", "pop_2023.xlsx"),
+    2024: ("000040268919", "pop_2024.xlsx"),      # 令和6年 年齢3区分
 }
 
 FACILITY_IDS = {
@@ -201,9 +203,9 @@ def build_physician_df():
             records.append({"year": year, "prefecture": pref, "ophthalmologists": val})
     df = pd.DataFrame(records)
 
-    # 2014-2023の全都道府県×年を作り、線形補間
+    # 2014-2024の全都道府県×年を作り、線形補間
     idx = pd.MultiIndex.from_product(
-        [range(2014, 2024), PREFECTURES_47], names=["year", "prefecture"]
+        [range(2014, 2025), PREFECTURES_47], names=["year", "prefecture"]
     )
     df_full = pd.DataFrame(index=idx).reset_index()
     df_full = df_full.merge(df, on=["year", "prefecture"], how="left")
@@ -349,7 +351,7 @@ def build_population_df():
     df = pd.DataFrame(records)
 
     idx = pd.MultiIndex.from_product(
-        [range(2014, 2024), PREFECTURES_47], names=["year", "prefecture"]
+        [range(2014, 2025), PREFECTURES_47], names=["year", "prefecture"]
     )
     df_full = pd.DataFrame(index=idx).reset_index()
     df_full = df_full.merge(df, on=["year", "prefecture"], how="left")
@@ -448,7 +450,7 @@ def build_facility_df():
 
     df = pd.DataFrame(records)
     idx = pd.MultiIndex.from_product(
-        [range(2014, 2024), PREFECTURES_47], names=["year", "prefecture"]
+        [range(2014, 2025), PREFECTURES_47], names=["year", "prefecture"]
     )
     df_full = pd.DataFrame(index=idx).reset_index()
     df_full = df_full.merge(df, on=["year", "prefecture"], how="left")
@@ -494,12 +496,12 @@ def main():
     print(f"  年範囲: {df['year'].min()} - {df['year'].max()}")
     print(f"  都道府県数: {df['prefecture'].nunique()}")
     print(f"  列: {list(df.columns)}")
-    print(f"\n  2023年 全国合計:")
-    d23 = df[df["year"] == 2023]
-    print(f"    人口: {d23['population_total'].sum():,}")
-    print(f"    65歳以上: {d23['population_65plus'].sum():,}")
-    print(f"    眼科医師: {d23['ophthalmologists'].sum():,}")
-    print(f"    眼科施設: {d23['facilities'].sum():,}")
+    print(f"\n  2024年 全国合計:")
+    d24 = df[df["year"] == 2024]
+    print(f"    人口: {d24['population_total'].sum():,}")
+    print(f"    65歳以上: {d24['population_65plus'].sum():,}")
+    print(f"    眼科医師: {d24['ophthalmologists'].sum():,}")
+    print(f"    眼科施設: {d24['facilities'].sum():,}")
 
 
 if __name__ == "__main__":

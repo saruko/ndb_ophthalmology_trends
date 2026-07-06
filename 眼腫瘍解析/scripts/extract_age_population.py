@@ -10,7 +10,7 @@ extract_age_population.py
 （build_real_covariates.py で採用済みの補間方針に合わせたもの）。
 
 入力: data/real_covariates/raw_download/age_pop/pop_by_age_{year}.xls(x)
-出力: 眼腫瘍解析/人口_4群層別化_2014_2023.csv
+出力: 眼腫瘍解析/人口_4群層別化_2014_2024.csv
       （単位: 千人。総務省人口推計の値をそのまま使用）
 """
 import os
@@ -30,6 +30,7 @@ FILES = {
     2021: "pop_by_age_2021.xlsx",
     2022: "pop_by_age_2022.xlsx",
     2023: "pop_by_age_2023.xlsx",
+    2024: "pop_by_age_2024.xlsx",
 }
 
 def age_to_group(age):
@@ -51,7 +52,7 @@ def parse_year(year, filename):
     # ブロック1: 列0=年齢ラベル, 列1=総人口(男女計) -> 年齢 0〜49歳
     # ブロック2: 列9=年齢ラベル, 列10=総人口(男女計) -> 年齢 50〜100歳以上
     for label_col, val_col in [(0, 1), (9, 10)]:
-        for r in range(13, df.shape[0]):
+        for r in range(9, df.shape[0]):
             label = df.iloc[r, label_col]
             if pd.isna(label):
                 continue
@@ -66,7 +67,12 @@ def parse_year(year, filename):
             val = df.iloc[r, val_col]
             if pd.isna(val):
                 continue
-            records.append({"age": age, "population_thousands": float(val)})
+            if isinstance(val, str) and not val.strip():
+                continue
+            try:
+                records.append({"age": age, "population_thousands": float(val)})
+            except (ValueError, TypeError):
+                continue
 
     df_year = pd.DataFrame(records)
     df_year["year"] = year
@@ -96,7 +102,7 @@ def main():
     df_out["is_interpolated"] = df_out["year"].isin([2015, 2020])
     df_out = df_out.sort_values(["age_group_4", "year"])
 
-    out_path = os.path.join(OUT_DIR, "人口_4群層別化_2014_2023.csv")
+    out_path = os.path.join(OUT_DIR, "人口_4群層別化_2014_2024.csv")
     df_out.to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"Saved: {out_path} (shape={df_out.shape})")
 

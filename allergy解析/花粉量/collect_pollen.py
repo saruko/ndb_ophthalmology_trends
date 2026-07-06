@@ -53,24 +53,52 @@ def collect_all_sources(year):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Pollen Data Aggregator (NPO, MOE, Local)")
-    parser.add_argument("--year", type=int, default=2024, help="Target year to collect (e.g. 2024)")
+    parser.add_argument("--year", type=int, default=None, help="Target year to collect (takes precedence over start/end)")
+    parser.add_argument("--start-year", type=int, default=2014, help="Start year of collection range")
+    parser.add_argument("--end-year", type=int, default=2024, help="End year of collection range")
     parser.add_argument("--out", type=str, default="output/pollen_summary_standard.csv", help="Path to output standard CSV")
     args = parser.parse_args()
     
-    try:
-        df_result = collect_all_sources(args.year)
+    # 収集対象年度リストの構築
+    if args.year is not None:
+        years = [args.year]
+    else:
+        years = list(range(args.start_year, args.end_year + 1))
         
+    print(f"Target years for collection: {years}")
+    
+    all_dfs = []
+    
+    for y in years:
+        try:
+            df_year = collect_all_sources(y)
+            all_dfs.append(df_year)
+            print(f"\n[SUCCESS] Completed collection for year {y}. Records: {len(df_year)}")
+        except Exception as e:
+            print(f"\n[WARNING] Failed collection for year {y}: {e}")
+            
+    if not all_dfs:
+        print("\n[CRITICAL ERROR] No pollen data could be gathered for any of the specified years.")
+        exit(1)
+        
+    # 全データを統合
+    df_result = pd.concat(all_dfs, ignore_index=True)
+    df_result = df_result.sort_values(by=["year", "source", "prefecture", "station", "pollen_type"]).reset_index(drop=True)
+    
+    try:
         # 出力先ディレクトリの作成
         out_dir = os.path.dirname(args.out)
         if out_dir:
             os.makedirs(out_dir, exist_ok=True)
             
-        df_result.to_csv(args.out, index=False, encoding='utf-8')
+        df_result.to_csv(args.out, index=False, encoding='utf-8-sig')
         
         print("\n========================================")
         print("Aggregation Completed Successfully!")
         print(f"Output saved to: {args.out}")
         print(f"Total Records: {len(df_result)}")
+        print("\nSummary by Year & Source:")
+        print(df_result.groupby(["year", "source"]).size().to_string())
         print("\nSummary by Source & Pollen Type:")
         print(df_result.groupby(["source", "pollen_type"]).size().to_string())
         print("\nSample records:")
@@ -78,4 +106,5 @@ if __name__ == "__main__":
         print("========================================")
         
     except Exception as e:
-        print(f"\n[CRITICAL ERROR] Aggregation failed: {e}")
+        print(f"\n[CRITICAL ERROR] Saving aggregated data failed: {e}")
+
