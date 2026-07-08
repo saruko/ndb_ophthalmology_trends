@@ -33,3 +33,7 @@ data/
 # Local configurations / credentials
 .env
 *.local
+
+# Images and plots
+**/jma_images/
+**/plots/

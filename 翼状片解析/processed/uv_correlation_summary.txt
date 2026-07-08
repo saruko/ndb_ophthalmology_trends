@@ -1,0 +1,118 @@
+============================================================
+ 紫外線量と翼状片手術（K224）の相関解析 サマリー
+============================================================
+
+【解析A】都道府県ごとの時系列相関（年次UV vs 手術率, N=9-11年）
+------------------------------------------------------------
+[jma_uv × inpatient] 対象47県
+  Spearman rho 中央値: -0.008 (範囲 -0.783 ~ +0.795)
+  p<0.05: 6県 / FDR補正後 q<0.05: 0県
+
+[jma_uv × outpatient] 対象47県
+  Spearman rho 中央値: +0.322 (範囲 -0.480 ~ +0.851)
+  p<0.05: 6県 / FDR補正後 q<0.05: 0県
+
+[jma_uv × total] 対象47県
+  Spearman rho 中央値: +0.295 (範囲 -0.588 ~ +0.857)
+  p<0.05: 4県 / FDR補正後 q<0.05: 0県
+
+[openmeteo_radiation × inpatient] 対象47県
+  Spearman rho 中央値: -0.250 (範囲 -0.867 ~ +0.817)
+  p<0.05: 8県 / FDR補正後 q<0.05: 0県
+
+[openmeteo_radiation × outpatient] 対象47県
+  Spearman rho 中央値: +0.224 (範囲 -0.673 ~ +0.891)
+  p<0.05: 10県 / FDR補正後 q<0.05: 3県
+    - 広島県: rho=+0.830 (p=0.0029, q=0.0461)
+    - 長野県: rho=+0.830 (p=0.0029, q=0.0461)
+    - 鹿児島県: rho=+0.891 (p=0.0005, q=0.0255)
+
+[openmeteo_radiation × total] 対象47県
+  Spearman rho 中央値: +0.200 (範囲 -0.830 ~ +0.891)
+  p<0.05: 6県 / FDR補正後 q<0.05: 3県
+    - 大分県: rho=-0.830 (p=0.0029, q=0.0461)
+    - 栃木県: rho=+0.879 (p=0.0008, q=0.0191)
+    - 鹿児島県: rho=+0.891 (p=0.0005, q=0.0191)
+
+※ 注意: 各県N=9-11年の小標本であり検出力が低い。またUV・手術率の双方に
+  経年トレンドがあると見かけの相関が生じうる（時系列の擬似相関）。参考解析。
+
+【解析B】年ごとの横断相関（47都道府県のUV vs 手術率）
+------------------------------------------------------------
+[jma_uv × inpatient]
+  2015: Pearson r=+0.369 (p=1.07e-02) | Spearman rho=+0.336 (p=2.10e-02) *
+  2016: Pearson r=+0.197 (p=1.85e-01) | Spearman rho=+0.137 (p=3.58e-01)  
+  2018: Pearson r=+0.267 (p=6.93e-02) | Spearman rho=+0.145 (p=3.31e-01)  
+  2019: Pearson r=+0.336 (p=2.09e-02) | Spearman rho=+0.320 (p=2.83e-02) *
+  2020: Pearson r=+0.367 (p=1.12e-02) | Spearman rho=+0.307 (p=3.56e-02) *
+  2021: Pearson r=+0.322 (p=2.72e-02) | Spearman rho=+0.317 (p=3.01e-02) *
+  2022: Pearson r=+0.318 (p=2.91e-02) | Spearman rho=+0.239 (p=1.05e-01)  
+  2023: Pearson r=+0.280 (p=5.65e-02) | Spearman rho=+0.166 (p=2.65e-01)  
+  2024: Pearson r=+0.396 (p=5.92e-03) | Spearman rho=+0.320 (p=2.85e-02) *
+  → 全年度平均: Pearson r=+0.317, Spearman rho=+0.254
+
+[jma_uv × outpatient]
+  2015: Pearson r=+0.778 (p=1.27e-10) | Spearman rho=+0.674 (p=2.11e-07) *
+  2016: Pearson r=+0.746 (p=1.72e-09) | Spearman rho=+0.622 (p=3.07e-06) *
+  2017: Pearson r=+0.731 (p=5.57e-09) | Spearman rho=+0.704 (p=3.33e-08) *
+  2018: Pearson r=+0.774 (p=1.83e-10) | Spearman rho=+0.681 (p=1.38e-07) *
+  2019: Pearson r=+0.700 (p=4.24e-08) | Spearman rho=+0.690 (p=8.22e-08) *
+  2020: Pearson r=+0.743 (p=2.25e-09) | Spearman rho=+0.682 (p=1.33e-07) *
+  2021: Pearson r=+0.763 (p=4.66e-10) | Spearman rho=+0.692 (p=7.31e-08) *
+  2022: Pearson r=+0.745 (p=1.92e-09) | Spearman rho=+0.703 (p=3.70e-08) *
+  2023: Pearson r=+0.739 (p=2.92e-09) | Spearman rho=+0.705 (p=3.13e-08) *
+  2024: Pearson r=+0.732 (p=4.94e-09) | Spearman rho=+0.626 (p=2.53e-06) *
+  → 全年度平均: Pearson r=+0.745, Spearman rho=+0.678
+
+[jma_uv × total]
+  2014: Pearson r=+0.679 (p=1.60e-07) | Spearman rho=+0.556 (p=5.01e-05) *
+  2015: Pearson r=+0.724 (p=9.14e-09) | Spearman rho=+0.658 (p=5.05e-07) *
+  2016: Pearson r=+0.670 (p=2.60e-07) | Spearman rho=+0.549 (p=6.50e-05) *
+  2018: Pearson r=+0.707 (p=2.80e-08) | Spearman rho=+0.639 (p=1.37e-06) *
+  2019: Pearson r=+0.668 (p=2.86e-07) | Spearman rho=+0.677 (p=1.75e-07) *
+  2020: Pearson r=+0.709 (p=2.42e-08) | Spearman rho=+0.651 (p=7.12e-07) *
+  2021: Pearson r=+0.716 (p=1.56e-08) | Spearman rho=+0.694 (p=6.19e-08) *
+  2022: Pearson r=+0.734 (p=4.42e-09) | Spearman rho=+0.681 (p=1.38e-07) *
+  2023: Pearson r=+0.711 (p=2.18e-08) | Spearman rho=+0.658 (p=5.09e-07) *
+  2024: Pearson r=+0.723 (p=9.55e-09) | Spearman rho=+0.640 (p=1.27e-06) *
+  → 全年度平均: Pearson r=+0.704, Spearman rho=+0.640
+
+[openmeteo_radiation × inpatient]
+  2015: Pearson r=-0.229 (p=1.21e-01) | Spearman rho=-0.066 (p=6.61e-01)  
+  2016: Pearson r=-0.149 (p=3.16e-01) | Spearman rho=-0.045 (p=7.62e-01)  
+  2018: Pearson r=+0.092 (p=5.39e-01) | Spearman rho=-0.036 (p=8.11e-01)  
+  2019: Pearson r=+0.159 (p=2.87e-01) | Spearman rho=+0.128 (p=3.92e-01)  
+  2020: Pearson r=+0.301 (p=3.95e-02) | Spearman rho=+0.273 (p=6.31e-02)  
+  2021: Pearson r=+0.083 (p=5.80e-01) | Spearman rho=+0.021 (p=8.90e-01)  
+  2022: Pearson r=+0.207 (p=1.62e-01) | Spearman rho=+0.164 (p=2.69e-01)  
+  2023: Pearson r=+0.040 (p=7.89e-01) | Spearman rho=-0.047 (p=7.52e-01)  
+  2024: Pearson r=+0.292 (p=4.63e-02) | Spearman rho=+0.251 (p=8.88e-02)  
+  → 全年度平均: Pearson r=+0.088, Spearman rho=+0.071
+
+[openmeteo_radiation × outpatient]
+  2015: Pearson r=+0.306 (p=3.63e-02) | Spearman rho=+0.167 (p=2.62e-01)  
+  2016: Pearson r=+0.367 (p=1.12e-02) | Spearman rho=+0.331 (p=2.30e-02) *
+  2017: Pearson r=+0.555 (p=5.22e-05) | Spearman rho=+0.565 (p=3.50e-05) *
+  2018: Pearson r=+0.546 (p=7.29e-05) | Spearman rho=+0.570 (p=2.85e-05) *
+  2019: Pearson r=+0.629 (p=2.16e-06) | Spearman rho=+0.638 (p=1.40e-06) *
+  2020: Pearson r=+0.621 (p=3.28e-06) | Spearman rho=+0.659 (p=4.72e-07) *
+  2021: Pearson r=+0.678 (p=1.68e-07) | Spearman rho=+0.647 (p=8.99e-07) *
+  2022: Pearson r=+0.517 (p=1.98e-04) | Spearman rho=+0.613 (p=4.67e-06) *
+  2023: Pearson r=+0.605 (p=6.65e-06) | Spearman rho=+0.612 (p=4.85e-06) *
+  2024: Pearson r=+0.650 (p=7.83e-07) | Spearman rho=+0.620 (p=3.32e-06) *
+  → 全年度平均: Pearson r=+0.547, Spearman rho=+0.542
+
+[openmeteo_radiation × total]
+  2014: Pearson r=-0.035 (p=8.13e-01) | Spearman rho=-0.076 (p=6.11e-01)  
+  2015: Pearson r=+0.172 (p=2.47e-01) | Spearman rho=+0.135 (p=3.65e-01)  
+  2016: Pearson r=+0.257 (p=8.16e-02) | Spearman rho=+0.267 (p=6.95e-02)  
+  2018: Pearson r=+0.471 (p=8.39e-04) | Spearman rho=+0.494 (p=4.19e-04) *
+  2019: Pearson r=+0.560 (p=4.18e-05) | Spearman rho=+0.565 (p=3.48e-05) *
+  2020: Pearson r=+0.591 (p=1.22e-05) | Spearman rho=+0.631 (p=1.94e-06) *
+  2021: Pearson r=+0.570 (p=2.86e-05) | Spearman rho=+0.559 (p=4.49e-05) *
+  2022: Pearson r=+0.506 (p=2.86e-04) | Spearman rho=+0.595 (p=1.02e-05) *
+  2023: Pearson r=+0.536 (p=1.05e-04) | Spearman rho=+0.508 (p=2.67e-04) *
+  2024: Pearson r=+0.627 (p=2.47e-06) | Spearman rho=+0.611 (p=5.05e-06) *
+  → 全年度平均: Pearson r=+0.425, Spearman rho=+0.429
+
+※ UVデータは暦年、NDBは年度（4月-3月）集計のため約3ヶ月のズレがある。
