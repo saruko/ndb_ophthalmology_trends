@@ -49,12 +49,16 @@ NDB_眼科診療トレンド解析_研究計画書/
 │       └── *.csv / *.txt   # 解析統計値 (APC, ジニ係数, パネル回帰レポート等)
 ├── allergy解析/            # サブ解析: 抗アレルギー点眼薬のトレンド・地域格差解析
 │   ├── run_allergy_pipeline.py
+│   ├── age_sex_analysis_results.md  # 年齢別処方量解析の結果サマリー（追加解析）
 │   ├── src/               # 前処理・解析・可視化モジュール
+│   │   └── preprocess_age_sex_allergy.py  # 年齢・性別別データパーサー
 │   └── processed/         # 解析結果出力
+│       └── ndb_allergy_age_sex_zero.csv   # 年齢・性別別処方量（追加解析）
 ├── 眼腫瘍解析/             # サブ解析: 眼腫瘍手術の年齢階級別・Poisson回帰解析
 │   └── scripts/           # 年齢層別化・rate換算・trend testスクリプト
 └── src/
     ├── preprocess.py       # データの前処理・クレンジング・マージ (縦持ち変換、秘匿値補完)
+    ├── preprocess_age_sex.py  # 手術・抗VEGF薬の年齢・性別別データパーサー（追加解析）
     ├── analysis.py         # 統計解析 (APC計算、ジニ係数/CV算出、相関分析、固定効果パネル回帰)
     └── visualization.py    # グラフ描画 (経年トレンド、格差指標推移、相関散布図、ランキング)
 ```
@@ -117,6 +121,24 @@ python generate_manuscript_docx.py
 - **`data/processed/sub_analysis/`**: K280・K268・K282の内訳別（サブグループ別）パネル回帰と感度分析の結果
 - **`allergy解析/processed/`**: 抗アレルギー点眼薬の全解析結果（詳細は [allergy解析/README.md](allergy解析/README.md) 参照）
 - **`眼腫瘍解析/`**: 眼腫瘍手術の年齢階級別・Poisson回帰解析（詳細は [眼腫瘍解析/scripts/README.md](眼腫瘍解析/scripts/README.md) 参照）
+
+### 4.3 年齢・性別別解析（追加解析）
+
+NDB年齢別ファイル（`data/raw/ndb_age_sex/`）を用いた追加解析。診療行為・処方薬の年齢分布と経時変化を把握する。
+
+| ファイル | 内容 | 主な列 |
+|---|---|---|
+| `data/processed/ndb_age_sex_zero.csv` | 眼科手術（K282・K268・K280等）および抗VEGF薬の年齢・性別別件数（2014〜2024年） | year, code, procedure_name, sex, age_group, count |
+| `allergy解析/processed/ndb_allergy_age_sex_zero.csv` | 抗アレルギー点眼薬の年齢・性別別処方量（2014〜2024年） | year, code, procedure_name, sex, age_group, count |
+
+#### アレルギー点眼薬の年齢別処方分布（主な発見）
+
+- 年齢分布は **5〜14歳（学童）と 70〜79歳（高齢者）の二峰性**が全期間で維持
+- 処方の若年化は認められず、**緩やかな高齢化傾向**（加重平均年齢: 48.3→49.7歳、+1.4歳）
+- オロパタジンは顕著に高齢化（47.3→54.4歳、+7.1歳）。ジェネリック普及によりエピナスチンに若年患者がシフトした市場分化を反映している可能性がある
+- 詳細は [allergy解析/age_sex_analysis_results.md](allergy解析/age_sex_analysis_results.md) 参照
+
+> **⚠️ 2016・2017年度データの制限:** NDB第3・4回リリースではエピナスチン（アレジオン）外来（院外）の年齢・性別内訳が全セル秘匿されており、これらの年度の処方量は大幅に過少推計される（外来院外の実際の集計総量: 2016年 約3,000万、2017年 約4,000万 が年齢別解析から欠落）。詳細は [allergy解析/README.md](allergy解析/README.md) セクション 2.5 を参照。
 
 ---
 
