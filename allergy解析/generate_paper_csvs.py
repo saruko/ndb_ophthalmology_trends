@@ -185,19 +185,24 @@ def generate_fig2():
 
 
 def generate_table1():
-    """Table 1: 対象薬剤の処方量・シェア一覧（2024年度）"""
-    print("\n=== Table 1 ===")
-    trends = pd.read_csv(os.path.join(SUMMARY_DIR, "national_trends_allergy.csv"))
-    shares = pd.read_csv(os.path.join(SUMMARY_DIR, "national_shares_allergy.csv"))
-    
-    # 2024年度
-    t24 = trends[trends["year"] == 2024][["code", "procedure_name", "count", "count_per_100k"]].copy()
-    s24 = shares[shares["year"] == 2024][["code", "share"]].copy()
-    
-    df = t24.merge(s24, on="code", how="left")
-    
-    # シェアをパーセント表示
-    df["share_pct"] = df["share"] * 100
+    """Table 1: 対象薬剤の処方量・シェア一覧（2024年度） - 総計列基準"""
+    print("\n=== Table 1 (grand total basis) ===")
+    pub = pd.read_csv(os.path.join(PROCESSED_DIR, "national_totals_published.csv"),
+                      encoding="utf-8-sig")
+    cov = pd.read_csv(os.path.join(BASE, "..", "data", "covariates",
+                                   "prefecture_covariates.csv"), encoding="utf-8-sig")
+    pop_2024 = cov[cov["year"] == 2024]["population_total"].sum()
+
+    t24 = pub[pub["year"] == 2024][["code", "procedure_name", "count_published"]].copy()
+    t24.rename(columns={"count_published": "count"}, inplace=True)
+    t24["count_per_100k"] = t24["count"] / pop_2024 * 100000
+
+    total_count = t24.loc[t24["code"] == "ALLERGY_EYE_TOTAL", "count"].values[0]
+    t24["share_pct"] = np.where(
+        t24["code"].isin(["ALLERGY_EYE_TOTAL", "ANTI_HIST", "MED_RELEASE", "IMMUNO"]),
+        np.nan,
+        t24["count"] / total_count * 100,
+    )
     
     # カテゴリ分類を追加
     anti_hist = ["EPINASTINE", "OLOPATADINE", "LEVOCASTINE", "KETOTIFEN"]
@@ -216,15 +221,15 @@ def generate_table1():
             return "小計/合計"
         return "その他"
     
-    df["drug_class"] = df["code"].apply(classify)
-    
+    t24["drug_class"] = t24["code"].apply(classify)
+
     # ソート: 合計 → 抗ヒスタミン → 遊離抑制 → 免疫抑制
     class_order = {"小計/合計": 0, "抗ヒスタミン薬": 1, "メディエーター遊離抑制薬": 2, "免疫抑制薬": 3, "その他": 4}
-    df["_class_sort"] = df["drug_class"].map(class_order)
-    df = df.sort_values(["_class_sort", "count"], ascending=[True, False])
-    df = df.drop(columns=["_class_sort", "share"])
-    
-    _save(df, "table1_drug_summary_2024.csv")
+    t24["_class_sort"] = t24["drug_class"].map(class_order)
+    t24 = t24.sort_values(["_class_sort", "count"], ascending=[True, False])
+    t24 = t24.drop(columns=["_class_sort"])
+
+    _save(t24, "table1_drug_summary_2024.csv")
 
 
 def generate_table2():
@@ -277,12 +282,34 @@ def generate_fig3_top3():
 
 
 def generate_fig4_top3():
-    """Fig 4 (Top 3): 全国トレンド＋シェア — 上位3剤合計"""
-    print("\n=== Fig 4 (Top 3) ===")
-    trends = pd.read_csv(
-        os.path.join(SUMMARY_DIR, "national_trends_allergy.csv"),
+    """Fig 4 (Top 3): 全国トレンド＋シェア — 総計列基準
+
+    従来は都道府県内訳セルの合算値を用いていたが、NDB秘匿セルの
+    ゼロ補完により過小評価となるため、NDB公表の「総計」列を基準とする。
+    ソース: processed/national_totals_published.csv (build_national_totals.py)
+    """
+    print("\n=== Fig 4 (Top 3) - grand total basis ===")
+    pub = pd.read_csv(
+        os.path.join(PROCESSED_DIR, "national_totals_published.csv"),
         encoding="utf-8-sig",
     )
+
+    cov = pd.read_csv(
+        os.path.join(BASE, "..", "data", "covariates", "prefecture_covariates.csv"),
+        encoding="utf-8-sig",
+    )
+    pop = cov.groupby("year").agg(
+        population_total=("population_total", "sum"),
+        population_65plus=("population_65plus", "sum"),
+    ).reset_index()
+
+    trends = pub.merge(pop, on="year", how="left")
+    trends.rename(columns={"count_published": "count"}, inplace=True)
+    trends["count_per_100k"] = trends["count"] / trends["population_total"] * 100000
+    trends["count_per_100k_65plus"] = trends["count"] / trends["population_65plus"] * 100000
+    trends = trends[["year", "code", "procedure_name", "count",
+                      "population_total", "population_65plus",
+                      "count_per_100k", "count_per_100k_65plus"]]
 
     top3_codes = ["EPINASTINE", "OLOPATADINE", "LEVOCASTINE"]
 
@@ -303,17 +330,20 @@ def generate_fig4_top3():
     _save(result, "fig4_national_trends.csv")
 
     # --- Fig4B: シェアを3剤合計基準で再計算 ---
-    shares = pd.read_csv(
-        os.path.join(SUMMARY_DIR, "national_shares_allergy.csv"),
-        encoding="utf-8-sig",
-    )
-
     top3_total = t3.groupby("year")["count"].sum().reset_index(name="top3_total")
+
+    # シェア計算: 各薬剤 / 全体合計 (share) と 各薬剤 / TOP3合計 (share_top3)
+    all_total = trends[trends["code"] == "ALLERGY_EYE_TOTAL"][["year", "count"]].rename(
+        columns={"count": "all_total"})
+    shares = trends[~trends["code"].isin(
+        ["ALLERGY_EYE_TOTAL", "ANTI_HIST", "MED_RELEASE", "IMMUNO"])].copy()
+    shares = shares.merge(all_total, on="year", how="left")
+    shares["share"] = shares["count"] / shares["all_total"]
+
     s3 = shares[shares["code"].isin(top3_codes)].merge(top3_total, on="year")
     s3["share_top3"] = s3["count"] / s3["top3_total"]
     s3 = s3.drop(columns=["top3_total"])
 
-    # 3剤以外の行にはshare_top3がないのでNaN
     result_s = shares.merge(s3[["year", "code", "share_top3"]], on=["year", "code"], how="left")
     result_s = result_s.sort_values(["code", "year"])
     _save(result_s, "fig4_market_shares.csv")

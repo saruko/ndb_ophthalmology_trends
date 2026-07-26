@@ -62,6 +62,56 @@ MAIN_DRUG_NAMES = {
     "IBUDILAST": "Ibudilast",
 }
 
+DRUG_CLASS_EN = {
+    "小計/合計": "Subtotal/Total",
+    "抗ヒスタミン薬": "Antihistamines",
+    "メディエーター遊離抑制薬": "Mast cell stabilizers",
+    "免疫抑制薬": "Immunosuppressants",
+}
+
+PROCEDURE_NAME_EN = {
+    "抗アレルギー点眼薬（全体合計）": "All anti-allergic eye drops (total)",
+    "抗ヒスタミン点眼薬（合計）": "Antihistamine eye drops (subtotal)",
+    "メディエーター遊離抑制点眼薬（合計）": "Mast cell stabilizer eye drops (subtotal)",
+    "免疫抑制点眼薬（合計）": "Immunosuppressant eye drops (subtotal)",
+    "エピナスチン点眼（アレジオン系）": "Epinastine (Alejon)",
+    "オロパタジン点眼（パタノール系）": "Olopatadine (Patanol)",
+    "レボカバスチン点眼（リボスチン系）": "Levocabastine (Livostin)",
+    "ケトチフェン点眼（ザジテン系）": "Ketotifen (Zaditen)",
+    "トラニラスト点眼（リザベン系）": "Tranilast (Rizaben)",
+    "アシタザノラスト点眼（ゼペリン）": "Acitazanolast (Zepelin)",
+    "クロモグリク酸点眼（インタール系）": "Cromoglicate (Intal)",
+    "ペミロラスト点眼（アレギサール系）": "Pemirolast (Alegysal)",
+    "イブジラスト点眼（ケタス）": "Ibudilast (Ketas)",
+    "シクロスポリン点眼（パピロック）": "Cyclosporine (Papilock)",
+    "タクロリムス点眼（タリムス）": "Tacrolimus (Talymus)",
+}
+
+PREF_EN = {
+    "北海道": "Hokkaido", "青森県": "Aomori", "岩手県": "Iwate",
+    "宮城県": "Miyagi", "秋田県": "Akita", "山形県": "Yamagata",
+    "福島県": "Fukushima", "茨城県": "Ibaraki", "栃木県": "Tochigi",
+    "群馬県": "Gunma", "埼玉県": "Saitama", "千葉県": "Chiba",
+    "東京都": "Tokyo", "神奈川県": "Kanagawa", "新潟県": "Niigata",
+    "富山県": "Toyama", "石川県": "Ishikawa", "福井県": "Fukui",
+    "山梨県": "Yamanashi", "長野県": "Nagano", "岐阜県": "Gifu",
+    "静岡県": "Shizuoka", "愛知県": "Aichi", "三重県": "Mie",
+    "滋賀県": "Shiga", "京都府": "Kyoto", "大阪府": "Osaka",
+    "兵庫県": "Hyogo", "奈良県": "Nara", "和歌山県": "Wakayama",
+    "鳥取県": "Tottori", "島根県": "Shimane", "岡山県": "Okayama",
+    "広島県": "Hiroshima", "山口県": "Yamaguchi", "徳島県": "Tokushima",
+    "香川県": "Kagawa", "愛媛県": "Ehime", "高知県": "Kochi",
+    "福岡県": "Fukuoka", "佐賀県": "Saga", "長崎県": "Nagasaki",
+    "熊本県": "Kumamoto", "大分県": "Oita", "宮崎県": "Miyazaki",
+    "鹿児島県": "Kagoshima", "沖縄県": "Okinawa",
+}
+
+VARIABLE_EN = {
+    "aging_rate": "Aging rate",
+    "docs_per_100k": "Physicians per 100k",
+    "facilities_per_100k": "Facilities per 100k",
+}
+
 # 配色
 COLORS = {
     "ALLERGY_EYE_TOTAL": "333333",
@@ -896,26 +946,36 @@ def generate_fig4():
 # Tables 1–5
 # ========================================================
 def generate_tables():
-    print("\n=== Tables 1–5 ===")
+    print("\n=== Tables 1-5 (English) ===")
     wb = Workbook()
     wb.remove(wb.active)
 
     header_font = Font(bold=True, size=10, color="FFFFFF")
     header_fill = PatternFill("solid", fgColor="4472C4")
     subheader_fill = PatternFill("solid", fgColor="D6E4F0")
-    thin_border = Border(
-        bottom=Side(style="thin", color="BFBFBF"),
-        top=Side(style="thin", color="BFBFBF"),
-    )
 
-    # --- Table 1: 薬剤一覧（2024年度）---
-    t1 = pd.read_csv(os.path.join(DATA_DIR, "table1_drug_summary_2024.csv"))
+    def _en_proc(name):
+        return PROCEDURE_NAME_EN.get(name, name)
+
+    def _en_pref(name):
+        return PREF_EN.get(name, name)
+
+    def _en_class(name):
+        return DRUG_CLASS_EN.get(name, name)
+
+    def _en_var(name):
+        return VARIABLE_EN.get(name, name)
+
+    # --- Table 1: Drug prescriptions (FY2024, grand total basis) ---
+    t1 = pd.read_csv(os.path.join(DATA_DIR, "table1_drug_summary_2024.csv"),
+                     encoding="utf-8-sig")
     ws1 = wb.create_sheet("Table1")
     ws1.merge_cells("A1:F1")
     ws1.cell(1, 1, value="Table 1. Anti-allergic eye drop prescriptions by drug (FY2024)")
     ws1.cell(1, 1).font = Font(bold=True, size=12)
 
-    t1_headers = ["Drug class", "Code", "Drug name", "Volume (mL)", "Per 100,000", "Share (%)"]
+    t1_headers = ["Drug class", "Code", "Drug name", "Volume (mL)",
+                  "Per 100,000", "Share (%)"]
     for c, h in enumerate(t1_headers, 1):
         cell = ws1.cell(3, c, value=h)
         cell.font = header_font
@@ -923,9 +983,10 @@ def generate_tables():
         cell.alignment = Alignment(horizontal="center")
 
     for r, row in enumerate(t1.itertuples(), 4):
-        ws1.cell(r, 1, value=row.drug_class)
+        drug_class_en = _en_class(row.drug_class)
+        ws1.cell(r, 1, value=drug_class_en)
         ws1.cell(r, 2, value=row.code)
-        ws1.cell(r, 3, value=row.procedure_name)
+        ws1.cell(r, 3, value=_en_proc(row.procedure_name))
         ws1.cell(r, 4, value=round(row.count, 0))
         ws1.cell(r, 4).number_format = '#,##0'
         ws1.cell(r, 5, value=round(row.count_per_100k, 1))
@@ -935,17 +996,17 @@ def generate_tables():
         if isinstance(share_val, (int, float)):
             ws1.cell(r, 6).number_format = '0.0'
 
-        # 小計行に色付け
-        if row.drug_class == "小計/合計":
+        if drug_class_en == "Subtotal/Total":
             for c in range(1, 7):
                 ws1.cell(r, c).fill = subheader_fill
                 ws1.cell(r, c).font = Font(bold=True)
 
     for c in [1, 2, 3, 4, 5, 6]:
-        ws1.column_dimensions[get_column_letter(c)].width = [16, 18, 30, 16, 14, 10][c-1]
+        ws1.column_dimensions[get_column_letter(c)].width = [20, 18, 32, 16, 14, 10][c-1]
 
-    # --- Table 2: M:F比（2024年度）---
-    t2 = pd.read_csv(os.path.join(DATA_DIR, "table2_mf_ratio_2024.csv"))
+    # --- Table 2: M:F ratio (FY2024) ---
+    t2 = pd.read_csv(os.path.join(DATA_DIR, "table2_mf_ratio_2024.csv"),
+                     encoding="utf-8-sig")
     t2_total = t2[t2["code"] == "ALLERGY_EYE_TOTAL"].copy()
     t2_total = _sort_age(t2_total)
 
@@ -981,22 +1042,35 @@ def generate_tables():
     for c in range(1, 8):
         ws2.column_dimensions[get_column_letter(c)].width = [12, 14, 14, 14, 14, 14, 14][c-1]
 
-    # --- Table 3: 地域格差指標 ---
-    t3 = pd.read_csv(os.path.join(DATA_DIR, "table3_geographic_disparity.csv"))
-    ws3 = _write_data_ws(wb, "Table3", t3)
+    # --- Table 3: Geographic disparity indices ---
+    t3 = pd.read_csv(os.path.join(DATA_DIR, "supplementary_geographic_disparity.csv"),
+                     encoding="utf-8-sig")
+    t3["procedure_name"] = t3["procedure_name"].map(_en_proc)
+    t3["min_prefecture"] = t3["min_prefecture"].map(_en_pref)
+    t3["max_prefecture"] = t3["max_prefecture"].map(_en_pref)
+    t3_cols = ["year", "code", "procedure_name", "mean_rate_per_100k", "cv",
+               "gini", "min_prefecture", "min_rate", "max_prefecture", "max_rate",
+               "max_to_min_ratio"]
+    t3_display = t3[t3_cols].copy()
+    t3_display.columns = ["Year", "Code", "Drug name", "Mean rate per 100k", "CV",
+                          "Gini", "Min prefecture", "Min rate", "Max prefecture",
+                          "Max rate", "Max/Min ratio"]
+    ws3 = _write_data_ws(wb, "Table3", t3_display)
     ws3.insert_rows(1)
     ws3.merge_cells("A1:K1")
     ws3.cell(1, 1, value="Table 3. Geographic disparity indices by drug and year")
     ws3.cell(1, 1).font = Font(bold=True, size=12)
 
     # --- Table 4: APC ---
-    t4 = pd.read_csv(os.path.join(DATA_DIR, "table4_apc_results.csv"))
+    t4 = pd.read_csv(os.path.join(DATA_DIR, "supplementary_apc_results.csv"),
+                     encoding="utf-8-sig")
     ws4 = wb.create_sheet("Table4")
     ws4.merge_cells("A1:I1")
     ws4.cell(1, 1, value="Table 4. Annual percent change (APC) in prescription volume per 100,000 population")
     ws4.cell(1, 1).font = Font(bold=True, size=12)
 
-    t4_headers = ["Drug code", "Drug name", "Period", "APC (%)", "95% CI lower", "95% CI upper", "p-value", "R²"]
+    t4_headers = ["Drug code", "Drug name", "Period", "APC (%)",
+                  "95% CI lower", "95% CI upper", "p-value", "R²"]
     for c, h in enumerate(t4_headers, 1):
         cell = ws4.cell(3, c, value=h)
         cell.font = header_font
@@ -1005,7 +1079,7 @@ def generate_tables():
 
     for r, row in enumerate(t4.itertuples(), 4):
         ws4.cell(r, 1, value=row.code)
-        ws4.cell(r, 2, value=row.procedure_name)
+        ws4.cell(r, 2, value=_en_proc(row.procedure_name))
         ws4.cell(r, 3, value=f"{row.start_year}-{row.end_year}")
         ws4.cell(r, 4, value=round(row.apc, 2))
         ws4.cell(r, 4).number_format = '0.00'
@@ -1022,16 +1096,16 @@ def generate_tables():
         ws4.cell(r, 8, value=round(row.r2, 4))
         ws4.cell(r, 8).number_format = '0.0000'
 
-        # 有意なAPCを太字
         if p_val < 0.05:
             for c in range(1, 9):
                 ws4.cell(r, c).font = Font(bold=True)
 
     for c in range(1, 9):
-        ws4.column_dimensions[get_column_letter(c)].width = [18, 28, 10, 10, 12, 12, 12, 10][c-1]
+        ws4.column_dimensions[get_column_letter(c)].width = [18, 32, 10, 10, 12, 12, 12, 10][c-1]
 
-    # --- Table 5: パネル回帰 ---
-    t5 = pd.read_csv(os.path.join(DATA_DIR, "table5_panel_regression.csv"))
+    # --- Table 5: Panel regression ---
+    t5 = pd.read_csv(os.path.join(DATA_DIR, "supplementary_panel_regression.csv"),
+                     encoding="utf-8-sig")
     ws5 = wb.create_sheet("Table5")
     ws5.merge_cells("A1:I1")
     ws5.cell(1, 1, value="Table 5. Fixed-effects panel regression results (prefecture FE + year FE)")
@@ -1047,8 +1121,8 @@ def generate_tables():
 
     for r, row in enumerate(t5.itertuples(), 4):
         ws5.cell(r, 1, value=row.code)
-        ws5.cell(r, 2, value=row.procedure_name)
-        ws5.cell(r, 3, value=row.variable)
+        ws5.cell(r, 2, value=_en_proc(row.procedure_name))
+        ws5.cell(r, 3, value=_en_var(row.variable))
         ws5.cell(r, 4, value=round(row.coefficient, 3))
         ws5.cell(r, 4).number_format = '#,##0.000'
         ws5.cell(r, 5, value=round(row.std_err, 3))
@@ -1070,11 +1144,11 @@ def generate_tables():
                 ws5.cell(r, c).font = Font(bold=True)
 
     for c in range(1, 10):
-        ws5.column_dimensions[get_column_letter(c)].width = [18, 28, 16, 14, 12, 10, 12, 12, 8][c-1]
+        ws5.column_dimensions[get_column_letter(c)].width = [18, 32, 20, 14, 12, 10, 12, 12, 8][c-1]
 
     out_path = os.path.join(OUT_DIR, "Tables_all.xlsx")
     wb.save(out_path)
-    print(f"  → {out_path}")
+    print(f"  -> {out_path}")
 
 
 # ========================================================
