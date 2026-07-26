@@ -13,6 +13,14 @@
       「薬効分類131の点眼液全品目で非秘匿セルの最小値は全年度1,000ちょうど、
         1,000未満は全シートで1件も存在しない」
   C4. 総計列自体が秘匿されている品目行が全期間で182件
+  C5. エピナスチン内LXシェアの年齢群別内訳
+      「0-4歳83.0%、5-9歳82.7%、80-84歳55.9%、90-94歳53.6%、幅29.3ポイント」
+  C6. 主要3成分合計の地域格差の秘匿感度
+      「最大/最小比 3.087倍→2.970倍（999充当）」
+
+C5・C6 は下記スクリプトが生成したCSVを参照する。先に実行しておくこと。
+  python build_brand_generic_formulation.py   -> C5
+  python run_censoring_sensitivity.py         -> C6
 
 出力:
   processed/methods_claims_verification.csv  （検証結果の一覧）
@@ -46,6 +54,9 @@ CLAIM_CAPTURE = {  # (year, code) -> 捕捉率(%)
     (2018, "EPINASTINE"): 100.0, (2018, "LEVOCASTINE"): 99.9, (2018, "OLOPATADINE"): 100.0,
 }
 CLAIM_MASKED_TOTAL_ROWS = 182
+CLAIM_LX_BY_AGE = {"0-4": 83.0, "5-9": 82.7, "80-84": 55.9, "90-94": 53.6}
+CLAIM_LX_SPAN_PT = 29.3
+CLAIM_TOP3_MAXMIN = (3.087, 2.970)
 
 
 def age_cols(df):
@@ -230,6 +241,46 @@ def main():
     ok &= hit
     print(f"  論文 {CLAIM_MASKED_TOTAL_ROWS} 件  実測 {masked_total_rows} 件  "
           f"[{'OK' if hit else 'NG'}]")
+
+    # --- C5 ---
+    print("\n--- C5. エピナスチン内LXシェアの年齢群別内訳 (2024年度) ---")
+    p5 = os.path.join(PROCESSED, "epinastine_lx_share_by_age.csv")
+    if not os.path.exists(p5):
+        print("  未生成: build_brand_generic_formulation.py を先に実行  [NG]")
+        ok = False
+    else:
+        lxa = pd.read_csv(p5, encoding="utf-8-sig")
+        rel = lxa[lxa["reliable"]].set_index("age_group")["LX_pct"]
+        for ag, claim in CLAIM_LX_BY_AGE.items():
+            got = float(rel.loc[ag]) if ag in rel.index else np.nan
+            h = (not np.isnan(got)) and abs(round(got, 1) - claim) < 0.05
+            ok &= h
+            print(f"  {ag:6s}: 論文 {claim:5.1f}%  実測 {got:5.1f}%  [{'OK' if h else 'NG'}]")
+        span = float(rel.max() - rel.min())
+        h = abs(round(span, 1) - CLAIM_LX_SPAN_PT) < 0.05
+        ok &= h
+        print(f"  幅    : 論文 {CLAIM_LX_SPAN_PT:5.1f}pt 実測 {span:5.1f}pt "
+              f"({rel.idxmax()} - {rel.idxmin()})  [{'OK' if h else 'NG'}]")
+
+    # --- C6 ---
+    print("\n--- C6. 主要3成分合計の地域格差（秘匿感度） ---")
+    p6 = os.path.join(PROCESSED, "censoring_sensitivity_disparity.csv")
+    if not os.path.exists(p6):
+        print("  未生成: run_censoring_sensitivity.py を先に実行  [NG]")
+        ok = False
+    else:
+        dsp = pd.read_csv(p6, encoding="utf-8-sig").set_index("code")
+        if "TOP3_TOTAL" not in dsp.index:
+            print("  TOP3_TOTAL 行なし: run_censoring_sensitivity.py を再実行  [NG]")
+            ok = False
+        else:
+            gz = float(dsp.loc["TOP3_TOTAL", "max_to_min_zero"])
+            gu = float(dsp.loc["TOP3_TOTAL", "max_to_min_upper"])
+            cz, cu = CLAIM_TOP3_MAXMIN
+            h = abs(gz - cz) < 0.0005 and abs(gu - cu) < 0.0005
+            ok &= h
+            print(f"  0充当  : 論文 {cz:.3f}倍  実測 {gz:.3f}倍")
+            print(f"  999充当: 論文 {cu:.3f}倍  実測 {gu:.3f}倍  [{'OK' if h else 'NG'}]")
 
     # --- 保存 ---
     censor["check"] = "C1_censor_rate"

@@ -4,7 +4,8 @@
 
 NDBオープンデータの外用薬（処方薬）では、数量1,000未満のセルが「-」で秘匿される。
 この閾値は生データ検証により全年度・全シート共通であることを確認済み
-（非秘匿セルの最小値は 2015年=1004.65、2016年=1005、2017年=1000、2024年=1000）。
+（薬効分類131の点眼液全品目で非秘匿セルの最小値は全11年度とも1,000ちょうど。
+  検証は verify_methods_claims.py の C3 を参照）。
 
 したがって秘匿セルの真値は区間 [0, 1000) にあり、
   zero  補完 → 全指標の下限
@@ -30,7 +31,24 @@ COV = os.path.join(BASE, "..", "data", "covariates", "prefecture_covariates.csv"
 OUT = os.path.join(BASE, "processed")
 
 MAIN_CODES = ["ALLERGY_EYE_TOTAL", "ANTI_HIST", "MED_RELEASE", "IMMUNO",
-              "EPINASTINE", "OLOPATADINE", "LEVOCASTINE"]
+              "EPINASTINE", "OLOPATADINE", "LEVOCASTINE", "TOP3_TOTAL"]
+
+# 本文の経年比較・都道府県間比較で用いる主要3成分（全期間で収録が保証される）
+TOP3_CODES = ["EPINASTINE", "OLOPATADINE", "LEVOCASTINE"]
+
+
+def add_top3(df):
+    """主要3成分の合計を TOP3_TOTAL として追加する。
+
+    本文の地域格差（最大/最小比 3.087倍）は3成分合計に基づくため、
+    感度分析でも同じ集計単位を評価できるようにする。
+    """
+    t3 = (df[df.code.isin(TOP3_CODES)]
+          .groupby(["year", "prefecture"], as_index=False)
+          .agg(count=("count", "sum"),
+               population_total=("population_total", "first")))
+    t3["code"] = "TOP3_TOTAL"
+    return pd.concat([df, t3], ignore_index=True)
 
 
 def gini(x):
@@ -63,7 +81,7 @@ def main():
         with tempfile.TemporaryDirectory() as tmp:
             df = preprocess_allergy(raw_dir=RAW, covariate_path=COV,
                                     output_dir=tmp, imputation_strategy=strategy)
-        res[strategy] = summarise(df)
+        res[strategy] = summarise(add_top3(df))
 
     # ── 全国数量・人口10万対の識別区間 ──
     lo, hi = res["zero"][0], res["upper"][0]
@@ -111,8 +129,11 @@ def main():
     for _, r in disp.iterrows():
         g = sorted([r["gini_zero"], r["gini_upper"]])
         c = sorted([r["cv_zero"], r["cv_upper"]])
+        mz, mu = r["max_to_min_zero"], r["max_to_min_upper"]
+        mm = (f"max/min {mz:.3f}→{mu:.3f}" if pd.notna(mz)
+              else f"max/min 算出不能→{mu:.3f}")
         lines.append(f"  {r['code']:18s} Gini {g[0]:.3f}〜{g[1]:.3f} (0充当={r['gini_zero']:.3f})  "
-                     f"CV {c[0]:.3f}〜{c[1]:.3f} (0充当={r['cv_zero']:.3f})")
+                     f"CV {c[0]:.3f}〜{c[1]:.3f} (0充当={r['cv_zero']:.3f})  {mm}")
     lines.append("")
     lines.append("■ 全年度・全薬剤での最大区間幅")
     lines.append(f"  処方数量: +{nat['count_width_pct'].max():.3f}% "

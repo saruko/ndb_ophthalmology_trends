@@ -185,9 +185,10 @@ NDBオープンデータは公表回によって収録品目が異なり（Metho
 
 2024年度にはLX製剤にも後発品（エピナスチンLX 0.1%「ニットー」「SEC」）が初めて参入し、LX全体78,519,681 mLのうち後発品が29,984,724 mL（38.2%）を占めた。
 
-エピナスチン内におけるLX製剤のシェアは年齢群によって異なり、0–4歳83.0%、5–9歳82.7%と小児で高く、加齢とともに単調に低下して80–84歳55.9%、90–94歳53.6%であった（幅29.3ポイント）。
+エピナスチン内におけるLX製剤のシェアは年齢群によって異なり、0–4歳83.0%、5–9歳82.7%と小児で高く、加齢とともに単調に低下して80–84歳55.9%、90–94歳53.6%であった（幅29.3ポイント）。なお100歳以上は標準製剤側が秘匿されLXシェアが100%と算出されるが、エピナスチン全体の0.01%と僅少であるため幅の算出から除外した。
 
 > **Figure 5A 作成データ:** `processed/epinastine_lx_vs_standard.csv` — year × LX_pct / standard_pct の折れ線または積み上げ。
+> **LX年齢群別シェア 作成データ:** `processed/epinastine_lx_share_by_age.csv` — year=2024；age_group × LX_pct（reliable=Trueの群のみで幅を算出）。
 
 #### 後発医薬品（GE）シェアの推移
 
@@ -266,6 +267,8 @@ NDBオープンデータを用いた11年間の全国解析により、抗アレ
 
 パス表記: `processed/` = `allergy解析/processed/`、`内容まとめ/` = `allergy解析/内容まとめ/`
 
+生成スクリプト: `build_national_totals.py`（公表「総計」列の抽出）、`build_brand_generic_formulation.py`（先発後発・製剤別・LX年齢群別）、`run_censoring_sensitivity.py`（秘匿セルの識別区間・地域格差感度）、`generate_paper_csvs.py` / `generate_paper_xlsx.py`（図表データと図表ファイル）。Methods に記載した生データ由来の主張（ブロック秘匿率・捕捉率・秘匿閾値・総計列秘匿件数・LX年齢群別シェア・3成分合計の格差感度）は `verify_methods_claims.py` で一括再検証できる。
+
 | 図表 | 内容 | データファイル | 使用列・フィルタ |
 |---|---|---|---|
 | **Fig 1A** | 年齢群別 人口10万対処方数量（2024年度、全体合計） | `processed/age_sex_rates_allergy.csv` | year=2024, code=ALLERGY_EYE_TOTAL, sex=both；x=age_group, y=count_per_100k |
@@ -281,6 +284,8 @@ NDBオープンデータを用いた11年間の全国解析により、抗アレ
 | **Fig 5A** | エピナスチン LX vs 標準製剤 シェア推移 | `processed/epinastine_lx_vs_standard.csv` | year × LX_pct / standard_pct |
 | **Fig 5B** | 後発品シェア推移（主要3成分） | `processed/brand_generic_share.csv` | category∈{EPINASTINE, OLOPATADINE, LEVOCASTINE}；year × share_pct_generic |
 | **Fig 5C** | エピナスチン 製剤×先発後発 4区分シェア推移 | `processed/epinastine_lx_formulation_detail.csv` | year × LX_brand_pct / LX_generic_pct / std_brand_pct / std_generic_pct（積み上げ） |
+| （本文） | エピナスチン内LXシェアの年齢群別内訳（2024年度） | `processed/epinastine_lx_share_by_age.csv` | year=2024；age_group × LX_pct、幅は reliable=True の群で算出 |
+| （本文） | 秘匿セルの識別区間・地域格差感度 | `processed/censoring_sensitivity_allergy.csv` ＋ `censoring_sensitivity_disparity.csv` | code=TOP3_TOTAL 他；max_to_min_zero / max_to_min_upper |
 | **Table 1** | 薬剤別処方数量・シェア一覧（2024年度） | `内容まとめ/national_trends_allergy.csv` ＋ `national_shares_allergy.csv` | year=2024 |
 | **Table 2** | 男女比（M:F）の年齢プロファイル | `processed/mf_ratio_by_age_allergy.csv` | year=2024, code=ALLERGY_EYE_TOTAL；mf_ratio_rate列 |
 | **Table 3** | 都道府県ランキング（上位・下位、**主要3成分合計**） | `論文に使うファイルたち/table3_prefecture_ranking_top3.csv` | 「2024年_人口10万対」「2024年_順位」列。Fig 3A と同一データ。薬剤別は `fig3_prefecture_by_drug.csv` |
