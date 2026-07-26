@@ -54,9 +54,17 @@ def classify_drug(drug_name: str) -> tuple[str, str] | None:
 
 
 def clean_count_value(val, imputation_strategy: str = "zero") -> float:
-    """秘匿値（'-' 等）を補完処理する"""
+    """秘匿値（'-' 等）を補完処理する
+
+    外用薬（処方薬）の秘匿閾値は数量1,000未満であり、全年度・全シート共通である
+    （生データ検証済み: 非秘匿セルの最小値は全年度で1,000以上）。したがって秘匿セルの
+    真値は区間 [0, 1000) にあり、zero が識別区間の下限、upper (999) が上限に対応する。
+    five / random は閾値10を前提とした旧仕様のため、本データでは zero とほぼ同義。
+    """
     if pd.isna(val) or str(val).strip() in ["-", "—", "－", ""]:
-        if imputation_strategy == "five":
+        if imputation_strategy == "upper":
+            return 999.0
+        elif imputation_strategy == "five":
             return 5.0
         elif imputation_strategy == "random":
             return float(np.random.randint(1, 10))

@@ -78,7 +78,7 @@ def run():
         print(f"{code}: Gini(年度平均) = {ginis.mean():.4f} "
               f"[{np.percentile(ginis,2.5):.4f}, {np.percentile(ginis,97.5):.4f}]")
 
-    out = pd.DataFrame(all_rows).round(4)
+    out = pd.DataFrame(all_rows).round(3)
     out.to_csv(os.path.join(OUT_DIR, "bayes_mi_gini.csv"),
                index=False, encoding="utf-8-sig")
     print("saved: bayes_mi_gini.csv")

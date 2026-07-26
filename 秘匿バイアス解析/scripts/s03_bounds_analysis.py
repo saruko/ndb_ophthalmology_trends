@@ -74,7 +74,7 @@ def run():
         disp[f"{m}_lower"] = disp[[f"{m}_imput1", f"{m}_imput9"]].min(axis=1)
         disp[f"{m}_upper"] = disp[[f"{m}_imput1", f"{m}_imput9"]].max(axis=1)
         disp[f"{m}_width"] = disp[f"{m}_upper"] - disp[f"{m}_lower"]
-    disp = disp.round(4)
+    disp = disp.round(3)
     disp.to_csv(os.path.join(OUT_DIR, "bounds_disparity.csv"), encoding="utf-8-sig")
 
     # --- 全国合計APCの bounds（code） ---
@@ -92,7 +92,7 @@ def run():
     apc_df.to_csv(os.path.join(OUT_DIR, "bounds_apc.csv"), index=False, encoding="utf-8-sig")
 
     print("=== Gini識別区間の幅（コード別平均, 降順） ===")
-    print(disp.groupby("code")["gini_width"].mean().sort_values(ascending=False).round(4).to_string())
+    print(disp.groupby("code")["gini_width"].mean().sort_values(ascending=False).round(3).to_string())
     print("\n=== APC bounds（コード別） ===")
     print(apc_df.to_string(index=False))
 

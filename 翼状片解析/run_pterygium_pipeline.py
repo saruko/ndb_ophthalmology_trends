@@ -10,6 +10,11 @@ from preprocess_pterygium import preprocess_pterygium
 from analysis_pterygium import analyze_pterygium
 from visualization_pterygium import visualize_pterygium_all
 
+def fmt_p(p):
+    if p < 0.001:
+        return "<0.001"
+    return f"{p:.3f}"
+
 def generate_prefecture_pivots(rate_csv_path, output_dir):
     """都道府県別のピボットCSV（手術件数・人口10万対・ランキング）を生成する。"""
     print("Generating prefecture pivot CSVs...")
@@ -91,7 +96,7 @@ def generate_summary_report(output_dir, imputation_strategy):
                 sig = "(*有意)" if row['p_value'] < 0.05 else "(有意差なし)"
                 f.write(f" - {setting_str} ({row['start_year']}~{row['end_year']}年度, 2017年欠測除外):\n")
                 f.write(f"   * APC: {row['apc']:.2f}% (95%CI: {row['apc_low']:.2f}% ~ {row['apc_high']:.2f}%) {sig}\n")
-                f.write(f"   * p-value: {row['p_value']:.4f} | R²: {row['r2']:.4f}\n")
+                f.write(f"   * p-value: {fmt_p(row['p_value'])} | R²: {row['r2']:.4f}\n")
             f.write("\n")
             
         # 3. 地域格差指標 (最新年度)
@@ -104,8 +109,8 @@ def generate_summary_report(output_dir, imputation_strategy):
             for _, row in df_disp_latest.iterrows():
                 setting_str = "全体 (外来+入院)" if row['setting'] == 'total' else ("外来" if row['setting'] == 'outpatient' else "入院")
                 f.write(f" - {setting_str}:\n")
-                f.write(f"   * 変動係数 (CV): {row['cv']:.4f}\n")
-                f.write(f"   * ジニ係数 (Gini): {row['gini']:.4f}\n")
+                f.write(f"   * 変動係数 (CV): {row['cv']:.3f}\n")
+                f.write(f"   * ジニ係数 (Gini): {row['gini']:.3f}\n")
                 f.write(f"   * 最大/最小比: {row['max_to_min_ratio']:.2f}倍 (最小: {row['min_prefecture']} {row['min_rate']:.2f}件 / 最大: {row['max_prefecture']} {row['max_rate']:.2f}件)\n")
             f.write("\n")
             

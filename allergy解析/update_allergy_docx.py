@@ -372,7 +372,7 @@ for i, (_, row) in enumerate(sub_intra.iterrows()):
     var_label = row["variable"].replace("d_", "ΔShare（") + "）"
     set_cell_text(t7.rows[row_idx].cells[2], f"{row['coefficient']:.3f}")
     set_cell_text(t7.rows[row_idx].cells[3], f"{row['std_err']:.3f}")
-    set_cell_text(t7.rows[row_idx].cells[4], f"{row['t_stat']:.2f}")
+    set_cell_text(t7.rows[row_idx].cells[4], f"{row['t_stat']:.3f}")
     set_cell_text(t7.rows[row_idx].cells[5], fmt_p(row["p_value"]))
     if i == 0:
         set_cell_text(t7.rows[row_idx].cells[6], f"{row['r2_within']:.3f}")

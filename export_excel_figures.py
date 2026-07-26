@@ -55,8 +55,8 @@ for code in CODES:
             '診療行為名': CODE_LABEL.get(code, code),
             '年度': int(r['year']),
             '全国施行件数': int(r['count']),
-            '人口10万対施行件数': round(r['count_per_100k'], 2),
-            '65歳以上人口10万対施行件数': round(r['count_per_100k_65plus'], 2),
+            '人口10万対施行件数': round(r['count_per_100k'], 1),
+            '65歳以上人口10万対施行件数': round(r['count_per_100k_65plus'], 1),
         })
 df_trend = pd.DataFrame(rows_trend)
 
@@ -81,7 +81,7 @@ for _, a in apc_lin.iterrows():
             'APC(%)': round(a['apc'], 2),
             '95%CI下限(%)': round(a['apc_low'], 2),
             '95%CI上限(%)': round(a['apc_high'], 2),
-            'p値': round(a['p_value'], 6),
+            'p値': a['p_value'],
             'R2': round(a['r2'], 4),
         })
 
@@ -109,12 +109,12 @@ for code in CODES:
             '診療行為コード': code,
             '診療行為名': CODE_LABEL.get(code, code),
             '年度': int(r['year']),
-            '変動係数(CV)': round(r['cv'], 4),
-            'Gini係数': round(r['gini'], 4),
-            '平均施行率(per100k)': round(r['mean_rate_per_100k'], 2),
-            '最小施行率': round(r['min_rate'], 2),
-            '最大施行率': round(r['max_rate'], 2),
-            '最大/最小比': round(r['max_to_min_ratio'], 2) if pd.notna(r['max_to_min_ratio']) else None,
+            '変動係数(CV)': round(r['cv'], 3),
+            'Gini係数': round(r['gini'], 3),
+            '平均施行率(per100k)': round(r['mean_rate_per_100k'], 1),
+            '最小施行率': round(r['min_rate'], 1),
+            '最大施行率': round(r['max_rate'], 1),
+            '最大/最小比': round(r['max_to_min_ratio'], 1) if pd.notna(r['max_to_min_ratio']) else None,
             '最小都道府県': r['min_prefecture'],
             '最大都道府県': r['max_prefecture'],
         })
@@ -167,11 +167,11 @@ for code in CODES:
                 '診療行為名': CODE_LABEL.get(code, code),
                 '年度': int(yr),
                 '高齢化率_ρ': round(r['spearman_rho_aging'], 4),
-                '高齢化率_p値': round(r['p_value_aging'], 6),
+                '高齢化率_p値': r['p_value_aging'],
                 '眼科医数_ρ': round(r['spearman_rho_docs'], 4),
-                '眼科医数_p値': round(r['p_value_docs'], 6),
+                '眼科医数_p値': r['p_value_docs'],
                 '施設数_ρ': round(r['spearman_rho_facilities'], 4),
-                '施設数_p値': round(r['p_value_facilities'], 6),
+                '施設数_p値': r['p_value_facilities'],
             })
 df_corr = pd.DataFrame(corr_rows)
 
@@ -193,10 +193,10 @@ for code in CODES:
             '診療行為コード': code,
             '診療行為名': CODE_LABEL.get(code, code),
             '説明変数': var_label,
-            '回帰係数': round(rv['coefficient'], 2),
-            '標準誤差': round(rv['std_err'], 2),
-            't値': round(rv['t_stat'], 2),
-            'p値': round(rv['p_value'], 6),
+            '回帰係数': round(rv['coefficient'], 3),
+            '標準誤差': round(rv['std_err'], 3),
+            't値': round(rv['t_stat'], 3),
+            'p値': rv['p_value'],
             'R2_within': round(r2, 4),
             '観測数': n,
         })
