@@ -14,9 +14,10 @@ import pandas as pd
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 from analysis_antivegf import calculate_gini, calculate_apc_linear  # noqa: E402
 from preprocess_antivegf import impute  # noqa: E402
+from paths import input_path  # noqa: E402
 
-BASE = r"G:\マイドライブ\NDB_眼科診療トレンド解析_研究計画書"
-ANTIVEGF_DIR = os.path.join(BASE, "抗VEFG薬")
+ANTIVEGF_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE = os.path.dirname(ANTIVEGF_DIR)
 DATA_DIR = ANTIVEGF_DIR
 OUT_DIR = os.path.join(DATA_DIR, "processed")
 COVARIATES = os.path.join(BASE, "data", "covariates", "prefecture_covariates.csv")
@@ -157,8 +158,8 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     print(f"=== G016 解析 (imputation={args.imputation}) ===")
 
-    pref = _load(os.path.join(DATA_DIR, "g016_prefecture.csv"), args.imputation)
-    agesex = _load(os.path.join(DATA_DIR, "g016_agesex.csv"), args.imputation)
+    pref = _load(input_path(DATA_DIR, "g016_prefecture.csv"), args.imputation)
+    agesex = _load(input_path(DATA_DIR, "g016_agesex.csv"), args.imputation)
 
     nat = national_trends(pref, COVARIATES, OUT_DIR)
     prefecture_analysis(pref, COVARIATES, OUT_DIR)

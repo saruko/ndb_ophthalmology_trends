@@ -26,9 +26,13 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE, "src"))
 from preprocess_allergy import preprocess_allergy  # noqa: E402
 
-RAW = os.path.join(BASE, "..", "data", "raw")
-COV = os.path.join(BASE, "..", "data", "covariates", "prefecture_covariates.csv")
-OUT = os.path.join(BASE, "processed")
+from paths import (COVARIATE_PATH, RAW_DIR,  # noqa: E402
+                   nokouhi_from_argv, output_dir)
+
+NOKOUHI = nokouhi_from_argv()
+RAW = RAW_DIR
+COV = COVARIATE_PATH
+OUT = output_dir(NOKOUHI)
 
 MAIN_CODES = ["ALLERGY_EYE_TOTAL", "ANTI_HIST", "MED_RELEASE", "IMMUNO",
               "EPINASTINE", "OLOPATADINE", "LEVOCASTINE", "TOP3_TOTAL"]
@@ -79,7 +83,7 @@ def main():
     res = {}
     for strategy in ["zero", "upper"]:
         with tempfile.TemporaryDirectory() as tmp:
-            df = preprocess_allergy(raw_dir=RAW, covariate_path=COV,
+            df = preprocess_allergy(raw_dir=RAW, covariate_path=COV, nokouhi=NOKOUHI,
                                     output_dir=tmp, imputation_strategy=strategy)
         res[strategy] = summarise(add_top3(df))
 

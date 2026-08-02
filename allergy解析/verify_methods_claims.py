@@ -37,9 +37,10 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE, "src"))
 from preprocess_allergy import classify_drug  # noqa: E402
 
-RAW = os.path.join(BASE, "..", "data", "raw")
-RAWAS = os.path.join(RAW, "ndb_age_sex")
-PROCESSED = os.path.join(BASE, "processed")
+from paths import nokouhi_from_argv, output_dir, raw_file  # noqa: E402
+
+NOKOUHI = nokouhi_from_argv()
+PROCESSED = output_dir(NOKOUHI)
 YEARS = list(range(2014, 2025))
 
 # 論文に記載されている値
@@ -88,7 +89,7 @@ def check_c1_c3():
     """年齢性別ファイルを走査して C1（秘匿率）と C3（最小値）を求める。"""
     censor_rows, min_rows = [], []
     for year in YEARS:
-        path = os.path.join(RAWAS, f"ndb_gaiyo_agesex_{year}.xlsx")
+        path = raw_file("ndb_gaiyo_agesex", year, NOKOUHI, agesex=True)
         if not os.path.exists(path):
             continue
         xl = pd.ExcelFile(path)
@@ -139,7 +140,7 @@ def check_c3_pref_and_c4():
     """都道府県ファイルを走査して C3（最小値）と C4（総計列秘匿件数）を求める。"""
     rows, masked_total_rows = [], 0
     for year in YEARS:
-        path = os.path.join(RAW, f"ndb_gaiyo_{year}.xlsx")
+        path = raw_file("ndb_gaiyo", year, NOKOUHI)
         if not os.path.exists(path):
             continue
         xl = pd.ExcelFile(path)

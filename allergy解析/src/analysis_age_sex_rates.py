@@ -13,8 +13,15 @@
 import pandas as pd
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parents[1]
-PROCESSED = BASE / "processed"
+from paths import find, nokouhi_from_argv, output_dir
+
+NOKOUHI = nokouhi_from_argv()
+PROCESSED = Path(output_dir(NOKOUHI))
+
+
+def _src(name):
+    """整理前（processed*/）でも整理後（02_中間データ/ 等）でも入力を解決する。"""
+    return find(name, NOKOUHI)
 
 AGE_ORDER = ["0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
              "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69",
@@ -22,8 +29,8 @@ AGE_ORDER = ["0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
 
 
 def main():
-    ndb = pd.read_csv(PROCESSED / "ndb_allergy_age_sex_zero.csv")
-    pop = pd.read_csv(PROCESSED / "population_age_sex.csv")
+    ndb = pd.read_csv(_src("ndb_allergy_age_sex_zero.csv"))
+    pop = pd.read_csv(_src("population_age_sex.csv"))
 
     df = ndb.merge(pop, on=["year", "sex", "age_group"], how="left")
     if df.population.isna().any():

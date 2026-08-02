@@ -23,8 +23,8 @@ from analysis_product import (analyze_by_product, analyze_formulation,
 from visualization_antivegf import plot_all
 from report_antivegf import generate_report
 
-BASE = r"G:\マイドライブ\NDB_眼科診療トレンド解析_研究計画書"
-ANTIVEGF_DIR = os.path.join(BASE, "抗VEFG薬")
+ANTIVEGF_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE = os.path.dirname(ANTIVEGF_DIR)
 COVARIATES = os.path.join(BASE, "data", "covariates", "prefecture_covariates.csv")
 
 # --nokouhi 指定時は「公費含まない」サブフォルダの入出力に切り替える

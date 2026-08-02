@@ -33,9 +33,27 @@ import numpy as np
 
 # ── パス設定 ──
 BASE = os.path.dirname(os.path.abspath(__file__))
-SUMMARY_DIR = os.path.join(BASE, "内容まとめ")
-PROCESSED_DIR = os.path.join(BASE, "processed")
-OUT_DIR = os.path.join(BASE, "論文に使うファイルたち")
+sys.path.append(os.path.join(BASE, "src"))
+from paths import find, nokouhi_from_argv, output_dir  # noqa: E402
+
+NOKOUHI = nokouhi_from_argv()
+PROCESSED_DIR = output_dir(NOKOUHI)
+
+
+def _src(name):
+    """入力CSVのパスを解決する。
+
+    旧版では 内容まとめ/（公費含む世代のスナップショット）からも読んでいたが、
+    内容が最新と食い違い fig3 の取り違えを招いたため、一次出力先＋整理後フォルダ
+    のみを見るように統一した。organize_outputs.py 実行後でも解決できる。
+    """
+    return find(name, NOKOUHI)
+
+
+# 05_論文成果物/ は確定した成果物の置き場であり、ここから直接上書きはしない。
+# いったんステージング（processed*/論文用CSV/）に出し、差分を確認してから
+# 05_論文成果物/公費含まない（または 公費含む）へコピーする運用とする。
+OUT_DIR = os.environ.get("PAPER_CSV_OUT_DIR") or os.path.join(PROCESSED_DIR, "論文用CSV")
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -68,8 +86,8 @@ def _save(df, filename, index=False):
     return path
 
 
-def _copy(src_dir, src_name, dst_name):
-    src = os.path.join(src_dir, src_name)
+def _copy(src_name, dst_name):
+    src = _src(src_name)
     dst = os.path.join(OUT_DIR, dst_name)
     if os.path.exists(src):
         shutil.copy2(src, dst)
@@ -102,7 +120,7 @@ def sort_age(df, col="age_group"):
 def generate_fig1a():
     """Fig 1A: 年齢群別 人口10万対処方量（2024年度, 男女合算, 全薬剤合計 + 薬剤別）"""
     print("\n=== Fig 1A ===")
-    rates = pd.read_csv(os.path.join(PROCESSED_DIR, "age_sex_rates_allergy.csv"))
+    rates = pd.read_csv(_src("age_sex_rates_allergy.csv"))
     
     # 2024年度, both（男女合算）
     mask = (rates["year"] == 2024) & (rates["sex"] == "both")
@@ -114,7 +132,7 @@ def generate_fig1a():
 def generate_fig1b():
     """Fig 1B: 性別×年齢群 人口10万対処方量（2024年度）"""
     print("\n=== Fig 1B ===")
-    rates = pd.read_csv(os.path.join(PROCESSED_DIR, "age_sex_rates_allergy.csv"))
+    rates = pd.read_csv(_src("age_sex_rates_allergy.csv"))
     
     # 2024年度, male/female
     mask = (rates["year"] == 2024) & (rates["sex"].isin(["male", "female"]))
@@ -139,7 +157,7 @@ TOP3_NAME = "上位3剤合計（エピナスチン・オロパタジン・レボ
 def generate_fig2():
     """Fig 2: 年齢分布の経年変化（シェア比較 + 加重平均処方年齢の推移）"""
     print("\n=== Fig 2 ===")
-    raw = pd.read_csv(os.path.join(SUMMARY_DIR, "ndb_allergy_age_sex_zero.csv"))
+    raw = pd.read_csv(_src("ndb_allergy_age_sex_zero.csv"))
 
     # ソースにALLERGY_EYE_TOTAL等の合計行が既に含まれているのでそのまま使う
     # sex合算、薬剤別に年齢分布シェアを計算
@@ -187,7 +205,7 @@ def generate_fig2():
 def generate_table1():
     """Table 1: 対象薬剤の処方量・シェア一覧（2024年度） - 総計列基準"""
     print("\n=== Table 1 (grand total basis) ===")
-    pub = pd.read_csv(os.path.join(PROCESSED_DIR, "national_totals_published.csv"),
+    pub = pd.read_csv(_src("national_totals_published.csv"),
                       encoding="utf-8-sig")
     cov = pd.read_csv(os.path.join(BASE, "..", "data", "covariates",
                                    "prefecture_covariates.csv"), encoding="utf-8-sig")
@@ -235,7 +253,7 @@ def generate_table1():
 def generate_table2():
     """Table 2: M:F比の年齢プロファイル（2024年度）"""
     print("\n=== Table 2 ===")
-    mf = pd.read_csv(os.path.join(PROCESSED_DIR, "mf_ratio_by_age_allergy.csv"))
+    mf = pd.read_csv(_src("mf_ratio_by_age_allergy.csv"))
     
     # 2024年度
     df = mf[mf["year"] == 2024].copy()
@@ -258,7 +276,7 @@ def generate_fig3_top3():
     """Fig 3 (Top 3): 都道府県別ランキング — 上位3剤合計"""
     print("\n=== Fig 3 (Top 3) ===")
     pbd = pd.read_csv(
-        os.path.join(PROCESSED_DIR, "prefecture_per_capita_by_drug_allergy.csv"),
+        _src("prefecture_per_capita_by_drug_allergy.csv"),
         encoding="utf-8-sig",
     )
 
@@ -290,7 +308,7 @@ def generate_fig4_top3():
     """
     print("\n=== Fig 4 (Top 3) - grand total basis ===")
     pub = pd.read_csv(
-        os.path.join(PROCESSED_DIR, "national_totals_published.csv"),
+        _src("national_totals_published.csv"),
         encoding="utf-8-sig",
     )
 
@@ -358,31 +376,31 @@ def copy_existing():
     print("\n=== 既存ファイルコピー ===")
 
     # Fig 3: 都道府県別ランキング
-    _copy(SUMMARY_DIR, "prefecture_per_capita_ranking_allergy.csv",
+    _copy("prefecture_per_capita_ranking_allergy.csv",
           "fig3_prefecture_ranking.csv")
 
     # Fig 3 補助: 都道府県別×薬剤別
-    _copy(PROCESSED_DIR, "prefecture_per_capita_by_drug_allergy.csv",
+    _copy("prefecture_per_capita_by_drug_allergy.csv",
           "fig3_prefecture_by_drug.csv")
 
     # Fig 4: シェア（元ファイルをコピー。generate_fig4_top3で上書きされる）
-    _copy(SUMMARY_DIR, "national_shares_allergy.csv",
+    _copy("national_shares_allergy.csv",
           "fig4_market_shares.csv")
 
     # 補足: 地域格差指標（CV・Gini）
-    _copy(PROCESSED_DIR, "geographic_disparity_allergy.csv",
+    _copy("geographic_disparity_allergy.csv",
           "supplementary_geographic_disparity.csv")
 
     # 補足: APC
-    _copy(PROCESSED_DIR, "national_apc_linear_allergy.csv",
+    _copy("national_apc_linear_allergy.csv",
           "supplementary_apc_results.csv")
 
     # 補足: Joinpoint APC
-    _copy(PROCESSED_DIR, "national_apc_joinpoint_allergy.csv",
+    _copy("national_apc_joinpoint_allergy.csv",
           "supplementary_apc_joinpoint.csv")
 
     # 補足: パネル回帰
-    _copy(PROCESSED_DIR, "panel_regression_summary_allergy.csv",
+    _copy("panel_regression_summary_allergy.csv",
           "supplementary_panel_regression.csv")
 
 

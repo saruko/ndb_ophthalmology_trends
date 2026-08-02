@@ -4,6 +4,8 @@ import re
 import pandas as pd
 import numpy as np
 
+from paths import raw_file
+
 PREFECTURES = [
     "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県",
     "埼玉県", "千葉県", "東京都", "神奈川県", "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県",
@@ -174,12 +176,17 @@ def load_gaiyo_year(year: int, file_path: str,
 
 
 def preprocess_allergy(raw_dir: str, covariate_path: str,
-                       output_dir: str, imputation_strategy: str = "zero") -> pd.DataFrame:
+                       output_dir: str, imputation_strategy: str = "zero",
+                       nokouhi: bool = True) -> pd.DataFrame:
     """
     抗アレルギー点眼薬解析用のデータ前処理。
     外用薬ファイル (ndb_gaiyo_YYYY.xlsx) を読み込み、共変量とマージして保存する。
+
+    nokouhi=True（主解析）のとき、2024年度だけ公費レセプトを含まない集計表に
+    差し替える。2014〜2023年度はもともと公費含まない集計のみが公表されている。
     """
-    print(f"Starting preprocess_allergy (eye drops) with strategy: {imputation_strategy}...")
+    print(f"Starting preprocess_allergy (eye drops) with strategy: {imputation_strategy}"
+          f", kouhi={'含まない' if nokouhi else '含む'}...")
 
     gaiyo_files = glob.glob(os.path.join(raw_dir, "ndb_gaiyo_*.*"))
     years_map: dict[int, str] = {}
@@ -190,6 +197,13 @@ def preprocess_allergy(raw_dir: str, covariate_path: str,
 
     if not years_map:
         raise FileNotFoundError(f"No ndb_gaiyo_*.xlsx files found in {raw_dir}")
+
+    if nokouhi:
+        for year in list(years_map):
+            sub = raw_file("ndb_gaiyo", year, nokouhi=True)
+            if sub != years_map[year]:
+                print(f"  {year}年度は公費含まない版に差し替え: {os.path.basename(sub)}")
+                years_map[year] = sub
 
     all_dfs = []
     for year, file_path in sorted(years_map.items()):
@@ -320,9 +334,14 @@ def load_chusha_year(year: int, file_path: str,
 
 def preprocess_injection_drugs(raw_dir: str, covariate_path: str,
                                output_dir: str,
-                               imputation_strategy: str = "zero") -> pd.DataFrame:
-    """DUPIXENT/ZOLEAIRの前処理。注射薬ファイルから抽出し共変量とマージする。"""
-    print(f"Starting preprocess_injection_drugs with strategy: {imputation_strategy}...")
+                               imputation_strategy: str = "zero",
+                               nokouhi: bool = True) -> pd.DataFrame:
+    """DUPIXENT/ZOLEAIRの前処理。注射薬ファイルから抽出し共変量とマージする。
+
+    nokouhi=True のとき、2024年度だけ公費レセプトを含まない集計表に差し替える。
+    """
+    print(f"Starting preprocess_injection_drugs with strategy: {imputation_strategy}"
+          f", kouhi={'含まない' if nokouhi else '含む'}...")
 
     chusha_files = glob.glob(os.path.join(raw_dir, "ndb_chusha_*.*"))
     drug_file_2024 = os.path.join(raw_dir, "ndb_chusha_drug_2024.xlsx")
@@ -341,6 +360,13 @@ def preprocess_injection_drugs(raw_dir: str, covariate_path: str,
     if not years_map:
         print("No chusha files with injection sheets found. Skipping injection drugs.")
         return pd.DataFrame()
+
+    if nokouhi:
+        for year in list(years_map):
+            sub = raw_file("ndb_chusha", year, nokouhi=True)
+            if sub != years_map[year] and os.path.exists(sub):
+                print(f"  {year}年度は公費含まない版に差し替え: {os.path.basename(sub)}")
+                years_map[year] = sub
 
     all_dfs = []
     for year, file_path in sorted(years_map.items()):

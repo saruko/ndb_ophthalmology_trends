@@ -1,0 +1,32 @@
+                          PanelOLS Estimation Summary                           
+================================================================================
+Dep. Variable:           d_EPINASTINE   R-squared:                        0.7508
+Estimator:                   PanelOLS   R-squared (Between):              0.9936
+No. Observations:                 470   R-squared (Within):               0.4965
+Date:                Sun, Aug 02 2026   R-squared (Overall):              0.8566
+Time:                        10:51:02   Log-likelihood                    1675.9
+Cov. Estimator:             Clustered                                           
+                                        F-statistic:                      620.78
+Entities:                          47   P-value                           0.0000
+Avg Obs:                      10.0000   Distribution:                   F(2,412)
+Min Obs:                      10.0000                                           
+Max Obs:                      10.0000   F-statistic (robust):             150.14
+                                        P-value                           0.0000
+Time periods:                      10   Distribution:                   F(2,412)
+Avg Obs:                       47.000                                           
+Min Obs:                       47.000                                           
+Max Obs:                       47.000                                           
+                                                                                
+                               Parameter Estimates                               
+=================================================================================
+               Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
+---------------------------------------------------------------------------------
+d_OLOPATADINE    -0.8684     0.0589    -14.733     0.0000     -0.9842     -0.7525
+d_LEVOCASTINE    -0.8488     0.0526    -16.143     0.0000     -0.9522     -0.7454
+=================================================================================
+
+F-test for Poolability: 31.395
+P-value: 0.0000
+Distribution: F(55,412)
+
+Included effects: Entity, Time

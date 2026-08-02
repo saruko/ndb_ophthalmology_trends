@@ -8,6 +8,7 @@ Clinical Ophthalmology 投稿用 本文ドラフト (.docx) 生成スクリプ�
 """
 
 import os
+import sys
 import pandas as pd
 import numpy as np
 from docx import Document
@@ -16,7 +17,10 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(BASE_DIR, "論文")
+sys.path.append(os.path.join(BASE_DIR, "src"))
+from paths import find  # noqa: E402
+
+OUTPUT_DIR = os.path.join(BASE_DIR, "05_論文成果物")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -25,7 +29,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # =========================================================================
 
 def get_table1_data():
-    csv_path = os.path.join(BASE_DIR, "data/processed/national_trends.csv")
+    csv_path = find("national_trends.csv")
     if not os.path.exists(csv_path):
         return []
     df = pd.read_csv(csv_path)
@@ -47,8 +51,8 @@ def get_table1_data():
 
 
 def get_table2_data():
-    df_lin_path = os.path.join(BASE_DIR, "data/processed/national_apc_linear.csv")
-    df_jp_path = os.path.join(BASE_DIR, "data/processed/national_apc_joinpoint.csv")
+    df_lin_path = find("national_apc_linear.csv")
+    df_jp_path = find("national_apc_joinpoint.csv")
     if not os.path.exists(df_lin_path) or not os.path.exists(df_jp_path):
         return []
     
@@ -90,7 +94,7 @@ def get_table2_data():
 
 
 def get_table3_data():
-    csv_path = os.path.join(BASE_DIR, "data/processed/geographic_disparity.csv")
+    csv_path = find("geographic_disparity.csv")
     if not os.path.exists(csv_path):
         return []
     df = pd.read_csv(csv_path)
@@ -121,7 +125,7 @@ def get_table3_data():
 
 
 def get_table4_data():
-    csv_path = os.path.join(BASE_DIR, "data/processed/covariates_correlation.csv")
+    csv_path = find("covariates_correlation.csv")
     if not os.path.exists(csv_path):
         return []
     df = pd.read_csv(csv_path)
@@ -154,7 +158,7 @@ def get_table4_data():
 
 
 def get_table5_data():
-    csv_path = os.path.join(BASE_DIR, "data/processed/panel_regression_summary.csv")
+    csv_path = find("panel_regression_summary.csv")
     if not os.path.exists(csv_path):
         return []
     df = pd.read_csv(csv_path)

@@ -26,8 +26,10 @@ sys.path.append(os.path.join(BASE, "src"))
 from preprocess_allergy import (  # noqa: E402
     ANTI_HIST_CODES, IMMUNO_CODES, MED_RELEASE_CODES, classify_drug)
 
-RAW = os.path.join(BASE, "..", "data", "raw")
-OUT = os.path.join(BASE, "processed")
+from paths import nokouhi_from_argv, output_dir, raw_file_map  # noqa: E402
+
+NOKOUHI = nokouhi_from_argv()
+OUT = output_dir(NOKOUHI)
 
 
 def load_year(year, path):
@@ -65,11 +67,7 @@ def load_year(year, path):
 
 
 def main():
-    files = {}
-    for p in glob.glob(os.path.join(RAW, "ndb_gaiyo_*.xlsx")):
-        m = os.path.basename(p).replace("ndb_gaiyo_", "").replace(".xlsx", "")
-        if m.isdigit():
-            files[int(m)] = p
+    files = raw_file_map("ndb_gaiyo", NOKOUHI)
 
     rec = []
     for year in sorted(files):

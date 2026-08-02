@@ -6,6 +6,8 @@ import pandas as pd
 # srcディレクトリをパスに追加してインポートを可能にする
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
+from paths import (RAW_DIR, COVARIATE_PATH, add_nokouhi_arg,
+                   output_dir as output_dir_for)
 from preprocess_allergy import preprocess_allergy, preprocess_injection_drugs
 from analysis_allergy import analyze_allergy_all, run_panel_regression
 from analysis_substitution import run_substitution_analysis
@@ -176,28 +178,32 @@ def main():
         "--output-dir",
         type=str,
         default=None,
-        help="出力先ディレクトリ（既定: processed）。感度分析で主解析を上書きしないために使う"
+        help="出力先ディレクトリ（既定: processed_nokouhi、--kouhi 時は processed）。"
+             "感度分析で主解析を上書きしないために使う"
     )
+    add_nokouhi_arg(parser)
     args = parser.parse_args()
 
     # フォルダパスの設定
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    raw_dir = os.path.join(base_dir, "../data/raw")
-    covariate_path = os.path.join(base_dir, "../data/covariates/prefecture_covariates.csv")
-    output_dir = args.output_dir or os.path.join(base_dir, "processed")
+    raw_dir = RAW_DIR
+    covariate_path = COVARIATE_PATH
+    output_dir = args.output_dir or output_dir_for(args.nokouhi)
     os.makedirs(output_dir, exist_ok=True)
-    
+
     print("==================================================")
     print("      NDBアレルギー関連薬 サブ解析パイプライン")
     print(f"      補完戦略: {args.imputation}")
+    print(f"      公費レセプト: {'含まない（主解析）' if args.nokouhi else '含む（参考）'}")
     print("==================================================")
-    
+
     # 1. 前処理
     preprocess_allergy(
         raw_dir=raw_dir,
         covariate_path=covariate_path,
         output_dir=output_dir,
-        imputation_strategy=args.imputation
+        imputation_strategy=args.imputation,
+        nokouhi=args.nokouhi
     )
     
     # 2. 統計解析
@@ -224,7 +230,8 @@ def main():
         raw_dir=raw_dir,
         covariate_path=covariate_path,
         output_dir=output_dir,
-        imputation_strategy=args.imputation
+        imputation_strategy=args.imputation,
+        nokouhi=args.nokouhi
     )
     if not df_inj.empty:
         inj_csv = os.path.join(output_dir, f"ndb_processed_injection_allergy_{args.imputation}.csv")

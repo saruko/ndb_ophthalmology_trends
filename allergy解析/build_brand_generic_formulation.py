@@ -33,9 +33,10 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE, "src"))
 from preprocess_allergy import classify_drug  # noqa: E402
 
-RAW = os.path.join(BASE, "..", "data", "raw")
-RAWAS = os.path.join(RAW, "ndb_age_sex")
-OUT = os.path.join(BASE, "processed")
+from paths import nokouhi_from_argv, output_dir, raw_file, raw_file_map  # noqa: E402
+
+NOKOUHI = nokouhi_from_argv()
+OUT = output_dir(NOKOUHI)
 
 CATEGORIES = ["EPINASTINE", "OLOPATADINE", "LEVOCASTINE"]
 BRAND_PREFIX = {
@@ -78,11 +79,9 @@ def norm_age(label):
 # ------------------------------------------------------------------
 def build_products():
     rows = []
-    for path in sorted(glob.glob(os.path.join(RAW, "ndb_gaiyo_*.xlsx"))):
-        stem = os.path.basename(path).replace("ndb_gaiyo_", "").replace(".xlsx", "")
-        if not stem.isdigit():
-            continue
-        year = int(stem)
+    files = raw_file_map("ndb_gaiyo", NOKOUHI)
+    for year in sorted(files):
+        path = files[year]
         xl = pd.ExcelFile(path)
         for sheet in xl.sheet_names:
             df = pd.read_excel(path, sheet_name=sheet, header=None)
@@ -168,7 +167,7 @@ def build_epinastine(prod):
 # 4. エピナスチン内 LXシェアの年齢群別内訳（年齢性別ファイル）
 # ------------------------------------------------------------------
 def build_lx_by_age(year=2024):
-    path = os.path.join(RAWAS, f"ndb_gaiyo_agesex_{year}.xlsx")
+    path = raw_file("ndb_gaiyo_agesex", year, NOKOUHI, agesex=True)
     if not os.path.exists(path):
         raise FileNotFoundError(path)
     acc = {}

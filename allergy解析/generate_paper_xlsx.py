@@ -31,7 +31,12 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, numbers
 
 # ── パス設定 ──
 BASE = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE, "論文に使うファイルたち")
+sys.path.append(os.path.join(BASE, "src"))
+from paths import nokouhi_from_argv, output_dir  # noqa: E402
+
+# generate_paper_csvs.py が出したステージングのCSVを読み、同じ場所にxlsxを出す
+DATA_DIR = os.environ.get("PAPER_CSV_OUT_DIR") or os.path.join(
+    output_dir(nokouhi_from_argv()), "論文用CSV")
 OUT_DIR = DATA_DIR  # 同じフォルダに出力
 
 # 年齢グループのソート順

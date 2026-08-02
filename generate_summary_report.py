@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
 """解析結果サマリーレポートを生成するスクリプト"""
+import os
 import sys
 import pandas as pd
 import numpy as np
 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+from paths import find, output_dir  # noqa: E402
+
 sys.stdout.reconfigure(encoding='utf-8')
 
-apc_lin = pd.read_csv('data/processed/national_apc_linear.csv', encoding='utf-8-sig')
-apc_jp = pd.read_csv('data/processed/national_apc_joinpoint.csv', encoding='utf-8-sig')
-disp = pd.read_csv('data/processed/geographic_disparity.csv', encoding='utf-8-sig')
-corr = pd.read_csv('data/processed/covariates_correlation.csv', encoding='utf-8-sig')
-reg = pd.read_csv('data/processed/panel_regression_summary.csv', encoding='utf-8-sig')
-proc = pd.read_csv('data/processed/ndb_processed_zero.csv', encoding='utf-8-sig')
+OUT = output_dir()
+
+apc_lin = pd.read_csv(find('national_apc_linear.csv'), encoding='utf-8-sig')
+apc_jp = pd.read_csv(find('national_apc_joinpoint.csv'), encoding='utf-8-sig')
+disp = pd.read_csv(find('geographic_disparity.csv'), encoding='utf-8-sig')
+corr = pd.read_csv(find('covariates_correlation.csv'), encoding='utf-8-sig')
+reg = pd.read_csv(find('panel_regression_summary.csv'), encoding='utf-8-sig')
+proc = pd.read_csv(find('ndb_processed_zero.csv'), encoding='utf-8-sig')
 
 nat = proc.groupby(['year', 'code', 'procedure_name']).agg(
     count=('count', 'sum'),
@@ -251,7 +257,7 @@ lines.append('=' * 80)
 lines.append('以上')
 
 output = '\n'.join(lines)
-with open('data/processed/analysis_summary_report.txt', 'w', encoding='utf-8-sig') as f:
+with open(os.path.join(OUT, 'analysis_summary_report.txt'), 'w', encoding='utf-8-sig') as f:
     f.write(output)
-print('Report written: data/processed/analysis_summary_report.txt')
+print('Report written:', os.path.join(OUT, 'analysis_summary_report.txt'))
 print('Total lines:', len(lines))

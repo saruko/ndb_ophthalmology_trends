@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from drug_master import DRUG_MASTER, GROUPS, MOLECULE_NAMES
+from paths import input_path
 
 AGE_ORDER = [
     "0～4歳", "5～9歳", "10～14歳", "15～19歳", "20～24歳", "25～29歳",
@@ -140,10 +141,11 @@ def build_panel(df_pref, covariates_path):
 
 def preprocess_all(input_dir, output_dir, covariates_path, strategy):
     os.makedirs(output_dir, exist_ok=True)
-    pref_csv = os.path.join(input_dir, "ophthalmic_injection_prefecture.csv")
+    # 整理後（01_抽出データ/）でも整理前（フォルダ直下）でも解決できるようにする
+    pref_csv = input_path(input_dir, "ophthalmic_injection_prefecture.csv")
     pref = load_prefecture(pref_csv, strategy)
     nat = load_national(pref_csv)
-    agesex = load_agesex(os.path.join(input_dir, "ophthalmic_injection_agesex.csv"),
+    agesex = load_agesex(input_path(input_dir, "ophthalmic_injection_agesex.csv"),
                          strategy)
     panel = build_panel(pref, covariates_path)
 

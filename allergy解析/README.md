@@ -124,9 +124,9 @@ NDBオープンデータは第10回（2022年度分）から外用薬の収録�
 python allergy解析/run_censoring_sensitivity.py
 ```
 
-出力: `processed/censoring_sensitivity_allergy.csv`（年度×薬剤の区間）、
-`processed/censoring_sensitivity_disparity.csv`（格差指標）、
-`processed/censoring_sensitivity_report.txt`（レポート）
+出力: `03_解析結果/品質管理_感度分析/censoring_sensitivity_allergy.csv`（年度×薬剤の区間）、
+`03_解析結果/品質管理_感度分析/censoring_sensitivity_disparity.csv`（格差指標）、
+`03_解析結果/品質管理_感度分析/censoring_sensitivity_report.txt`（レポート）
 
 #### 2024年度 人口10万対処方数量の識別区間
 
@@ -232,94 +232,102 @@ python allergy解析/run_censoring_sensitivity.py
 
 ---
 
-## 3. ディレクトリ構成
+## 3. フォルダ構成
+
+抗VEFG薬・翼状片解析と同じ「番号付きフォルダ＋`organize_outputs.py`」構成に統一している。
+解析スクリプトは一旦 `processed_nokouhi/`（`--kouhi` 時は `processed/`）へ出力し、
+`organize_outputs.py` が下記へ振り分ける。フォルダ名の定義は [`src/paths.py`](src/paths.py) に集約。
 
 ```text
 allergy解析/
-├── run_allergy_pipeline.py          # パイプライン実行スクリプト（7ステップ）
-├── README.md                        # 本ファイル
-├── ge_analysis_interpretation.md    # GEシェア統計解析の解釈・論文記載案
-├── build_population_age_sex.py      # e-Stat人口推計 → population_age_sex.csv
-├── generate_paper_csvs.py           # 論文 Fig/Table 用CSVの生成 → 論文に使うファイルたち/
-├── generate_paper_xlsx.py           # 論文 Fig/Table 用xlsx（グラフ付き）の生成
-├── add_rounded_columns.py           # 論文用CSVに丸め列を併記（セクション15参照）
-├── update_allergy_docx.py           # 論文docxの数値更新
-├── paper_outline_sato_style.md      # 論文骨子（Sato et al. 形式）
-├── allergy_paper_draft_sato_style.md # 論文下書き
-├── 論文に使うファイルたち/          # 論文用 Fig/Table CSV・xlsx・docx（セクション14）
-├── 論文に使うCSV/                   # 基礎集計CSV（丸め列併記）
-├── 内容まとめ/                      # 主要CSVのコピー
-├── processed/                       # 解析出力ディレクトリ
-│   ├── ndb_allergy_age_sex_zero.csv # 年齢・性別別処方量（追加解析）
-│   ├── ndb_processed_allergy_*.csv  # 前処理済み統合データ（点眼薬）
-│   ├── ndb_processed_injection_allergy_*.csv  # 前処理済みデータ（注射薬）
-│   ├── national_trends_allergy.csv  # 全国トレンド（年度・薬剤別）
-│   ├── national_apc_linear_allergy.csv      # APC（対数線形回帰）
-│   ├── national_apc_joinpoint_allergy.csv   # Joinpoint APC
-│   ├── geographic_disparity_allergy.csv     # 地域格差指標の年次推移
-│   ├── covariates_correlation_allergy.csv   # Spearman相関係数
-│   ├── panel_regression_summary_allergy.csv # Two-way FE回帰結果（点眼薬）
-│   ├── panel_regression_summary_injection_allergy.csv # Two-way FE回帰結果（注射薬）
-│   ├── panel_regression_*_allergy_report.txt  # 各薬剤のパネル回帰詳細レポート
-│   ├── market_hhi_allergy.csv               # 市場シェア・HHI
-│   ├── substitution_regression_allergy.csv  # 治療的代替の回帰結果
-│   ├── theil_index_allergy.csv              # Theil T指数（格差分解）
-│   ├── convergence_analysis_allergy.csv     # σ収束・β収束分析
-│   ├── specialization_disparity_allergy.csv # 専門化と格差の相関
-│   ├── prefecture_prescriptions_allergy.csv           # 都道府県別全体処方数量ピボット
-│   ├── prefecture_prescriptions_by_drug_allergy.csv   # 都道府県×薬剤別処方数量ピボット
-│   ├── prefecture_per_capita_ranking_allergy.csv      # 都道府県別人口10万対ランキング
-│   ├── prefecture_per_capita_by_drug_allergy.csv      # 都道府県×薬剤別人口10万対ピボット
-│   ├── allergy_summary_report.txt   # 人間可読なサマリーレポート
-│   ├── brand_generic_share.csv     # 先発品vs後発品 年度別GEシェア
-│   ├── brand_generic_products.csv  # 先発品vs後発品 品目別処方量明細
-│   ├── ge_logistic_fit.csv         # GE普及ロジスティック曲線パラメータ
-│   ├── ge_age_correlation.csv      # GEシェア×平均年齢の相関係数
-│   ├── ge_comprehensive_summary.csv # GEシェア・年齢・予測値の統合データ
-│   ├── ge_statistics_report.txt    # GEシェア統計解析レポート
-│   └── plots/
-│       ├── national_trends_allergy.png           # トレンドグラフ
-│       ├── geographic_disparity_allergy.png      # 格差指標の推移
-│       └── correlation_scatter_*_2024.png        # 共変量との相関散布図（最新年度）
-└── src/
-    ├── preprocess_allergy.py       # 外用薬Excelから点眼薬を抽出・分類、注射薬前処理
-    ├── analyze_brand_generic.py    # 先発品vs後発品（GE）シェア解析
-    ├── analyze_ge_statistics.py    # GEシェア統計解析（ロジスティック曲線・相関）
-    ├── analyze_ge_age_distribution.py # GE/先発別の年齢分布解析
-    ├── analysis_allergy.py         # 統計解析（APC/Gini/相関/回帰）
-    ├── analysis_age_sex_rates.py   # 年齢×性別の人口10万対処方量・M:F比（セクション11）
-    ├── analysis_substitution.py    # 市場構造・治療的代替・収束・格差分解分析
-    └── visualization_allergy.py    # グラフ描画
+├── 01_抽出データ/      ndb_processed_allergy_zero.csv / ndb_processed_injection_allergy_zero.csv
+├── 02_中間データ/      ndb_allergy_age_sex_zero.csv / population_age_sex.csv
+├── 03_解析結果/
+│   ├── 全国トレンド/        national_* / drug_share_by_year / market_hhi / convergence_analysis
+│   ├── 都道府県_地域格差/   prefecture_* / geographic_disparity / covariates_correlation /
+│   │                        panel_regression_* / theil_index / specialization_disparity
+│   ├── 年齢性別/            age_sex_rates_allergy / mf_ratio_by_age_allergy
+│   ├── 後発品_剤形/         brand_generic_* / ge_* / epinastine_lx_*
+│   ├── 代替性分析/          substitution_*
+│   ├── 品質管理_感度分析/   censoring_sensitivity_* / methods_claims_verification
+│   └── allergy_summary_report.txt
+├── 04_図表/plots/      national_trends / geographic_disparity / correlation_scatter_*
+├── 05_論文成果物/      ★確定した成果物。organize_outputs.py の対象外（自動では触らない）
+│   ├── 公費含まない/   主解析の Fig/Table CSV・xlsx・docx（ver公費なし1〜5）・pptx
+│   ├── 公費含む/       参考版の Fig/Table CSV・xlsx・docx（ver1〜5）・pptx
+│   └── 秘匿閾値と識別区間の解説.md
+├── 公費含む/           参考：公費レセプトを含むデータでの 01〜04（同一構成）
+├── 旧版/               過去世代のスナップショット・初期docx（参照用。再実行の対象外）
+│   ├── 論文に使うCSV/  2026-07-26 時点の基礎集計CSV 10本
+│   └── 内容まとめ/     2026-07-07〜22 時点の主要CSVコピー＋GE解析メモ
+├── シクロスポリンとタクロリムス/  サブ解析（免疫抑制点眼薬）。01〜04の同一構成
+├── 花粉量/             参考資料：花粉飛散量の収集システム
+├── 類似研究/           参考文献PDF
+├── data/population_raw/  e-Stat人口推計の生Excel
+└── src/                paths.py ＋ 前処理・解析・可視化モジュール
 ```
 
-### 3.1 論文用CSVの生成手順
+### 3.1 主解析は「公費レセプトを含まない」版
+
+第1回〜第10回（2014〜2023年度）は**公費レセプトを含まない集計のみ**が公表されている。
+2024年度だけ「含む」版を使うと時系列に定義の不連続が生じるため、**経年トレンドの評価には
+公費含まない版を用いる**。詳細は
+[05_論文成果物/公費含まない/README.md](05_論文成果物/公費含まない/README.md) を参照。
+
+全スクリプトが `--nokouhi`（既定）/ `--kouhi` を受け付ける。`--nokouhi` のときは
+**2024年度の入力ファイルだけ** `data/raw/ndb_2024_nokouhi/` のものに差し替わり、
+出力先も `processed_nokouhi/` → `01〜04` に切り替わる（`--kouhi` では `processed/` → `公費含む/01〜04`）。
+差し替えの実体は [`src/paths.py`](src/paths.py) の `raw_file()` / `raw_file_map()` に集約している。
+
+| 用途 | `--nokouhi` で使用するファイル |
+|---|---|
+| 外用薬（都道府県別） | `data/raw/ndb_2024_nokouhi/ndb_gaiyo_2024_nokouhi.xlsx` |
+| 外用薬（年齢性別） | `data/raw/ndb_2024_nokouhi/ndb_gaiyo_agesex_2024_nokouhi.xlsx` |
+| 注射薬（都道府県別） | `data/raw/ndb_2024_nokouhi/ndb_chusha_2024_nokouhi.xlsx` |
+| 注射薬（年齢性別） | `data/raw/ndb_2024_nokouhi/ndb_chusha_agesex_2024_nokouhi.xlsx` |
+
+出典: 第11回NDBオープンデータ「処方薬 公費レセプトを含まないデータ」`001711930.zip`
+
+> 以前はこの差し替えを手作業で行っていたため再現できなかった。フラグ化にあたっては、
+> `--nokouhi` での再実行結果が `05_論文成果物/公費含まない/` の凍結CSVと一致することを
+> 確認している（§3.4）。
+
+### 3.2 05_論文成果物 は上書きしない
+
+`05_論文成果物/` のCSV・xlsx・docxは、論文執筆時点で確定した成果物である。
+`processed*/` の最新出力とは**同名でも内容が異なる**（再解析を経ているため）。
+事故を防ぐため以下のようにしている。
+
+- `organize_outputs.py` は `05_論文成果物/` と `旧版/` を走査対象から除外する
+- `organize_outputs.py` は移動先に同名ファイルがある場合、**上書きせず元の場所に残して警告する**
+- `generate_paper_csvs.py` / `generate_paper_xlsx.py` / `add_rounded_columns.py` は
+  `processed*/論文用CSV/`（ステージング）へ出力する。差分を確認したうえで
+  `05_論文成果物/` へ手動でコピーする運用とする
+  （出力先を変えたい場合は環境変数 `PAPER_CSV_OUT_DIR` で上書きできる）
+
+### 3.3 実行方法
+
+主解析（公費含まない）の一括実行:
 
 ```bash
-python allergy解析/generate_paper_csvs.py      # Fig/Table用CSVを生成
-python allergy解析/add_rounded_columns.py      # 丸め列を併記（毎回作り直すため再実行可）
-```
-
-`generate_paper_csvs.py` は出力を上書きするため、丸め列が必要な場合は必ず
-`add_rounded_columns.py` をこの順で実行する。
-
----
-
-## 4. 実行方法
-
-```bash
-# デフォルト（0補完）
 python allergy解析/run_allergy_pipeline.py --imputation zero
-
-# 5補完
-python allergy解析/run_allergy_pipeline.py --imputation five
-
-# ランダム補完（1-9の一様乱数）
-python allergy解析/run_allergy_pipeline.py --imputation random
 ```
 
-実行時間：約30秒〜1分
+```bash
+python allergy解析/organize_outputs.py
+```
 
-### パイプラインのステップ
+参考の公費含む版:
+
+```bash
+python allergy解析/run_allergy_pipeline.py --imputation zero --kouhi
+```
+
+```bash
+python allergy解析/organize_outputs.py --kouhi
+```
+
+`run_allergy_pipeline.py` のステップ:
 
 | ステップ | 処理内容 |
 |---|---|
@@ -331,8 +339,193 @@ python allergy解析/run_allergy_pipeline.py --imputation random
 | 6 | 都道府県別ピボットCSV生成 |
 | 7 | サマリーレポート出力 |
 
+補助スクリプト（いずれも `--kouhi` を受け付ける）:
+
+```bash
+python allergy解析/build_population_age_sex.py
+```
+
+```bash
+python allergy解析/build_national_totals.py
+```
+
+```bash
+python allergy解析/build_brand_generic_formulation.py
+```
+
+```bash
+python allergy解析/build_allergy_age_sex.py
+```
+
+```bash
+python allergy解析/src/analysis_age_sex_rates.py
+```
+
+```bash
+python allergy解析/run_censoring_sensitivity.py
+```
+
+```bash
+python allergy解析/verify_methods_claims.py
+```
+
+論文用ファイル（ステージングに出力される。§3.2参照）:
+
+```bash
+python allergy解析/generate_paper_csvs.py
+```
+
+```bash
+python allergy解析/add_rounded_columns.py
+```
+
+```bash
+python allergy解析/generate_paper_xlsx.py
+```
+
+`generate_paper_csvs.py` は出力を上書きするため、丸め列が必要な場合は必ず
+`add_rounded_columns.py` をこの順で実行する。
+
+### 3.4 論文成果物の再現手順
+
+`05_論文成果物/公費含まない/` の26本のCSVは、下記の順で再現できる
+（`build_population_age_sex.py` はe-Statへの通信が発生するため、
+`02_中間データ/population_age_sex.csv` が既にあれば省略してよい）。
+
+```bash
+python allergy解析/run_allergy_pipeline.py --imputation zero
+```
+
+```bash
+python allergy解析/build_national_totals.py
+```
+
+```bash
+python allergy解析/build_brand_generic_formulation.py
+```
+
+```bash
+python allergy解析/build_allergy_age_sex.py
+```
+
+```bash
+python allergy解析/src/analysis_age_sex_rates.py
+```
+
+```bash
+python allergy解析/generate_paper_csvs.py
+```
+
+```bash
+python allergy解析/add_rounded_columns.py
+```
+
+xlsx（グラフ埋め込み）は、既存のレイアウトを保つために
+`05_論文成果物/公費含む/` の xlsx を雛形として複製し、データシートの値だけを
+差し替える方式をとっている。
+
+```bash
+python allergy解析/build_nokouhi_xlsx.py
+```
+
+#### 再現性の検証結果（2026-08-02）
+
+上記手順を `--nokouhi`（既定）で通し、`05_論文成果物/公費含まない/` の凍結CSVと
+値レベルで突合した（`*_rounded` 列は比較対象外）。
+
+| 結果 | 本数 | 備考 |
+|---|---|---|
+| 一致 | 15 / 16 | 最大絶対差は 3.5e-10 以下（浮動小数点の表示差のみ） |
+| 不一致 | 1 / 16 | `fig3_prefecture_ranking.csv`（下記） |
+
+> **⚠️ 既知の不整合: `05_論文成果物/公費含まない/fig3_prefecture_ranking.csv`**
+>
+> このファイルだけ**公費レセプトを含むデータの値**が入っている。
+> 旧 `generate_paper_csvs.py` はこのファイルを `内容まとめ/`（公費含む世代の
+> スナップショット）からコピーしていたため、公費含まない版として実行しても
+> 2024年度の値が差し替わらなかった。
+>
+> 同じフォルダ内の `prefecture_per_capita_ranking_allergy.csv` は正しい公費含まない値
+> （2024年_人口10万対の47県合計 = 7,152,633）であるのに対し、
+> `fig3_prefecture_ranking.csv` は公費含む値（同 7,330,717、+2.5%）になっており、
+> **本来同一内容であるべき2ファイルが食い違っている**。
+>
+> 現在の `generate_paper_csvs.py` は一次出力先から読むよう修正済みで、再実行すれば
+> 正しい値が出る。**Fig 3 を論文に使う場合は差し替えが必要。**
+> 凍結ファイルは自動では上書きしていないので、
+> `processed_nokouhi/論文用CSV/fig3_prefecture_ranking.csv` を確認のうえ手動で差し替えること。
+
+### 3.5 スクリプト一覧
+
+| スクリプト | 役割 |
+|---|---|
+| `run_allergy_pipeline.py` | 本体パイプライン（7ステップ） |
+| `organize_outputs.py` | 一次出力を 01〜04 のフォルダへ振り分ける（削除しない） |
+| `build_population_age_sex.py` | e-Stat人口推計 → `population_age_sex.csv` |
+| `build_national_totals.py` | 公表総計と内訳合計の突合（秘匿の捕捉率） |
+| `build_brand_generic_formulation.py` | 先発/後発・LX製剤の構成 |
+| `build_allergy_age_sex.py` | 年齢×性別の集計（`ndb_allergy_age_sex_zero.csv`） |
+| `run_censoring_sensitivity.py` | 秘匿の識別区間（0充当 vs 999充当） |
+| `verify_methods_claims.py` | 論文記載値と再計算値の突合 |
+| `generate_paper_csvs.py` | 論文 Fig/Table 用CSVの生成（ステージング出力） |
+| `generate_paper_xlsx.py` | 論文 Fig/Table 用xlsx（グラフ付き）の生成 |
+| `add_rounded_columns.py` | 論文用CSVに丸め列を併記（§15参照） |
+| `build_nokouhi_xlsx.py` | 公費含む版xlsxを雛形に公費含まない版を生成 |
+| `update_allergy_docx.py` | 初期docx（`旧版/`）の数値更新 |
+| `src/paths.py` | フォルダ構成と公費有無の切り替えの一元管理 |
+| `src/preprocess_allergy.py` | 外用薬Excelから点眼薬を抽出・分類、注射薬前処理 |
+| `src/analysis_allergy.py` | 統計解析（APC/Gini/相関/回帰） |
+| `src/analysis_age_sex_rates.py` | 年齢×性別の人口10万対処方量・M:F比（§11） |
+| `src/analysis_substitution.py` | 市場構造・治療的代替・収束・格差分解分析 |
+| `src/analyze_ge_age_distribution.py` | GE/先発別の年齢分布解析 |
+| `src/visualization_allergy.py` | グラフ描画 |
+
+実行時間：本体パイプラインは約30秒〜1分。`build_national_totals.py` と
+`build_brand_generic_formulation.py` は11年分のExcelを走査するため数分かかる。
+
 ---
 
+## 4. サブ解析・参考資料
+
+### 4.1 シクロスポリンとタクロリムス（免疫抑制点眼薬サブ解析）
+
+次回の論文で扱うサブ解析。本体と同じ 01〜04 の構成にそろえてある。
+**全年度で公費レセプトを含まないデータ**を用いており（2024年度は自動で差し替え）、
+本体の主解析と定義が揃っている。
+
+```bash
+python allergy解析/シクロスポリンとタクロリムス/build_immunosuppressant_analysis.py
+```
+
+```bash
+python allergy解析/シクロスポリンとタクロリムス/organize_outputs.py
+```
+
+```bash
+python allergy解析/シクロスポリンとタクロリムス/build_xlsx.py
+```
+
+人口分母は本体の `02_中間データ/population_age_sex.csv` を参照するため、
+本体パイプラインを先に実行しておく必要がある。
+
+### 4.2 花粉量（参考資料）
+
+都道府県別・年度別の花粉飛散量（スギ・ヒノキ）を、NPO法人花粉情報協会・環境省・
+東京都健康安全研究センターの3ソースから収集するシステム。詳細は
+[花粉量/README.md](花粉量/README.md) を参照。
+
+- 本番モジュール: `collect_pollen.py` / `npo_pollen.py` / `env_pollen.py` /
+  `local_pollen.py` / `utils.py`（フォルダ直下）
+- `scripts/`: 収集元サイトの構造を調べるために書いた一回きりの探索スクリプト15本
+  （`check_*.py` / `parse_*.py` / `search_*.py`）。**実行記録として残しているだけで、
+  そのままでは動かない**（`npo_pollen` 等を親フォルダからimportしているため）
+- `output/`: 集計結果CSV、`tmp/`: ダウンロード・展開した生データ
+
+### 4.3 類似研究
+
+参考文献のPDF（Tanito 2022, Sakamoto 2017, Sato 2022, Akasaki 2024 ほか）。
+
+---
 ## 5. 主な解析結果（2024年度時点）
 
 ### 5.1 処方構成
@@ -440,7 +633,7 @@ python allergy解析/run_allergy_pipeline.py --imputation random
 ## 8. 年齢別処方量解析（追加解析）
 
 **入力:** `data/raw/ndb_age_sex/ndb_gaiyo_agesex_*.xlsx`（NDB外用薬・年齢性別別ファイル）  
-**データ:** `processed/ndb_allergy_age_sex_zero.csv`（5,094行）  
+**データ:** `02_中間データ/ndb_allergy_age_sex_zero.csv`（5,094行）  
 **詳細レポート:** `age_sex_analysis_results.md`
 
 > **⚠️ 生成スクリプトが現存しません**
@@ -548,8 +741,8 @@ NDB外用薬の「年齢・性別別データ」を用い、アレルギー性�
 **スクリプト:** `src/analyze_brand_generic.py`
 **入力:** `data/raw/ndb_gaiyo_{2014..2024}.xlsx`（外用薬Excel、3シート: 外来院内/外来院外/入院）
 **出力:**
-- `processed/brand_generic_share.csv` — 年度×薬剤別の先発品/後発品処方量・GEシェア（33行）
-- `processed/brand_generic_products.csv` — 品目別処方量明細（173行）
+- `03_解析結果/後発品_剤形/brand_generic_share.csv` — 年度×薬剤別の先発品/後発品処方量・GEシェア（33行）
+- `03_解析結果/後発品_剤形/brand_generic_products.csv` — 品目別処方量明細（173行）
 
 ### 9.1 分類方法
 
@@ -601,9 +794,9 @@ NDB外用薬の「年齢・性別別データ」を用い、アレルギー性�
 
 **スクリプト:** `src/analyze_ge_statistics.py`
 **出力:**
-- `processed/ge_logistic_fit.csv` — ロジスティック曲線パラメータ
-- `processed/ge_age_correlation.csv` — GEシェア×平均年齢の相関係数
-- `processed/ge_statistics_report.txt` — 詳細レポート
+- `03_解析結果/後発品_剤形/ge_logistic_fit.csv` — ロジスティック曲線パラメータ
+- `03_解析結果/後発品_剤形/ge_age_correlation.csv` — GEシェア×平均年齢の相関係数
+- `03_解析結果/後発品_剤形/ge_statistics_report.txt` — 詳細レポート
 
 ### 10.1 解析1: GE普及のロジスティック成長曲線
 
@@ -664,19 +857,19 @@ GE=0%の期間（相関を人為的に押し上げうる）を除外し、GE出�
 
 **スクリプト:** `src/analysis_age_sex_rates.py`
 **入力:**
-- `processed/ndb_allergy_age_sex_zero.csv`（年齢・性別別処方量）
-- `processed/population_age_sex.csv`（総務省人口推計、年齢群×性別、2014–2024年各10月1日現在）
+- `02_中間データ/ndb_allergy_age_sex_zero.csv`（年齢・性別別処方量）
+- `02_中間データ/population_age_sex.csv`（総務省人口推計、年齢群×性別、2014–2024年各10月1日現在）
 
 **出力:**
-- `processed/age_sex_rates_allergy.csv` — 年度×薬剤×性別（male/female/both）×年齢群の人口10万対処方量
-- `processed/mf_ratio_by_age_allergy.csv` — 年度×薬剤×年齢群の男女比（処方量比・率比）
+- `03_解析結果/年齢性別/age_sex_rates_allergy.csv` — 年度×薬剤×性別（male/female/both）×年齢群の人口10万対処方量
+- `03_解析結果/年齢性別/mf_ratio_by_age_allergy.csv` — 年度×薬剤×年齢群の男女比（処方量比・率比）
 
 ### 11.1 人口分母データ
 
 総務省統計局「人口推計」の各年10月1日現在人口（年齢5歳刻み×男女別）をe-Statから取得し、NDBの年度（4月〜翌3月）に対応させた。
 
 **生データ:** `data/population_raw/pop_age_sex_{2014..2024}.xlsx`（11ファイル）
-**集計CSV:** `processed/population_age_sex.csv`（454行、year × sex × age_group × population）
+**集計CSV:** `02_中間データ/population_age_sex.csv`（454行、year × sex × age_group × population）
 
 年齢区分はNDBの仕様に合わせた:
 - 2014–2015年: 19区分（最上位「90+」）
@@ -752,10 +945,10 @@ e-Statの人口推計Excelは千人単位で記載されており、**総数列�
 
 ## 12. エピナスチンLX製剤構成・先発後発解析（2026年7月追加）
 
-**入力:** `processed/brand_generic_products.csv`（品目別処方量明細）
+**入力:** `03_解析結果/後発品_剤形/brand_generic_products.csv`（品目別処方量明細）
 **出力:**
-- `processed/epinastine_lx_vs_standard.csv` — LX 0.1% vs 標準 0.05% の年度別シェア
-- `processed/epinastine_lx_formulation_detail.csv` — LX/標準 × 先発/後発 の4区分年度別シェア
+- `03_解析結果/後発品_剤形/epinastine_lx_vs_standard.csv` — LX 0.1% vs 標準 0.05% の年度別シェア
+- `03_解析結果/後発品_剤形/epinastine_lx_formulation_detail.csv` — LX/標準 × 先発/後発 の4区分年度別シェア
 
 ### 12.1 LX製剤 vs 標準製剤の推移
 
@@ -792,7 +985,7 @@ LXの後発品は2024年に初参入し、LX内シェア38.2%を獲得。今後�
 
 ## 13. 都道府県別薬剤別格差（2026年7月追加）
 
-**データ:** `processed/prefecture_per_capita_by_drug_allergy.csv`
+**データ:** `03_解析結果/都道府県_地域格差/prefecture_per_capita_by_drug_allergy.csv`
 
 ### 13.1 主要薬剤の都道府県格差（2024年度）
 
@@ -840,10 +1033,12 @@ Sato形式の記述統計に加え、以下の拡張を含む下書き:
 
 ### 14.3 図表→データソース対応表
 
-パス表記: `processed/` = `allergy解析/processed/`、`内容まとめ/` = `allergy解析/内容まとめ/`
-
-パス表記: 以下はすべて `論文に使うファイルたち/` 配下。**単年断面**は全体合計、**経年比較・都道府県比較**は
+パス表記: 以下はすべて `05_論文成果物/公費含まない/`（主解析）配下。
+公費含む版を参照する場合は `05_論文成果物/公費含む/` に読み替える。
+**単年断面**は全体合計、**経年比較・都道府県比較**は
 主要3成分合計（`TOP3_TOTAL`）を用いる（理由はセクション8冒頭の注記を参照）。
+
+> Fig 3 の `fig3_prefecture_ranking.csv` には既知の不整合がある（§3.4 の警告を参照）。
 
 | 図表 | 内容 | データファイル | 集計範囲 |
 |---|---|---|---|

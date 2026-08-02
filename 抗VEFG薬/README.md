@@ -13,13 +13,33 @@ NDBオープンデータ（第1回〜第11回：2014年度〜2024年度）の**�
 ```
 data/raw/ndb_chusha_YYYY.xlsx              ─┐
 data/raw/ndb_age_sex/ndb_chusha_agesex_*.xlsx ┤─► extract_ophthalmic_drugs.py
+data/raw/ndb_g_chusha_koui/*.xlsx          ─┘   extract_g016.py
                                              │
-                          抗VEFG薬/ophthalmic_injection_prefecture.csv
-                          抗VEFG薬/ophthalmic_injection_agesex.csv
+                                    01_抽出データ/*.csv
                                              │
-                                             └─► run_antivegf_pipeline.py
-                                                    └─► 抗VEFG薬/processed/
+     run_antivegf_pipeline.py / analyze_g016.py / analyze_cost.py
+     build_kabata_tables.py
+                                             │
+                                    processed/（一時出力）
+                                             │
+                                    organize_outputs.py
+                                             │
+   01_抽出データ / 02_中間データ / 03_解析結果 / 04_図表 / 05_先行研究再現_Kabata
 ```
+
+## フォルダ構成
+
+解析スクリプトは一旦 `processed/` に出力し、`organize_outputs.py` で下記へ振り分ける
+（何度実行しても同じ結果になる）。
+
+| フォルダ | 内容 |
+|---|---|
+| `01_抽出データ/` | 生Excelから抽出したCSV（解析の入力） |
+| `02_中間データ/` | 前処理済みデータ・パネルデータ（補完戦略別） |
+| `03_解析結果/` | 解析アウトプット。テーマ別に7サブフォルダ（全国トレンド／製品_剤形_バイオシミラー／医療費／年齢性別／都道府県_地域格差／G016硝子体内注射／品質管理_感度分析） |
+| `04_図表/` | 図（`plots/`）・Excel・Word |
+| `05_先行研究再現_Kabata/` | Kabata et al. (2026) の図表再現用データ |
+| `公費含まない/` | 全年度を「公費レセプトを含まない」で統一した解析（同一構成）。**経年トレンドの評価にはこちらを使用する** |
 
 ### 実行方法
 
@@ -28,14 +48,39 @@ python 抗VEFG薬/extract_ophthalmic_drugs.py     # 生Excel → CSV抽出（初
 ```
 
 ```bash
+python 抗VEFG薬/extract_g016.py                 # G016算定回数の抽出（初回のみ）
+```
+
+```bash
 python 抗VEFG薬/run_antivegf_pipeline.py        # zero補完で主解析＋感度分析
 ```
 
 ```bash
-python 抗VEFG薬/run_antivegf_pipeline.py --imputation five --no-sensitivity
+python 抗VEFG薬/analyze_g016.py                 # G016の解析
 ```
 
-出力先はいずれも `G:\マイドライブ\NDB_眼科診療トレンド解析_研究計画書\抗VEFG薬\processed\`。
+```bash
+python 抗VEFG薬/analyze_cost.py                 # 医療費の要因分解・治療総額・反実仮想
+```
+
+> **`analyze_cost.py` は2026年8月に再実装したもの**（元のスクリプトが失われ、出力CSVだけが
+> 残っていたため）。既存出力から手法を逆算し、6本中5本を数値まで完全再現できることを確認した
+> （要因分解・治療総額・反実仮想・価格乖離感度は相対差 1e-9 未満）。
+> 残る1本 `cost_biosimilar_regional_potential.csv` は、**旧出力に内部矛盾があった**ため
+> 一致しない（下記 §3-7 の注記を参照）。
+> なお同種のスクリプト欠落が他に2件ある: `src/preprocess_age_sex.py`（ルート）、
+> `眼腫瘍手術トレンド_2014_2024.csv` の抽出スクリプト。
+
+```bash
+python 抗VEFG薬/build_kabata_tables.py --kouhi  # 先行研究の図表再現
+```
+
+```bash
+python 抗VEFG薬/organize_outputs.py             # 出力をフォルダ構成へ振り分け
+```
+
+公費レセプトを含まない版を扱う場合は、各コマンドに `--nokouhi` を付ける
+（`build_kabata_tables.py` は `--kouhi` を外すと公費含まない版になる）。
 
 ---
 
@@ -116,7 +161,56 @@ NDBの「後発品区分」列は本分類では全品目`0`のため、**先発
 | `sensitivity_imputation_antivegf.csv` | zero/five/randomでのGini・順位相関の比較 |
 | `antivegf_summary_report_zero.txt` | 上記すべてを統合したテキストレポート |
 
-### 3-7. 図（`processed/plots/`）
+### 3-7. 医療費（`03_解析結果/医療費/`）
+| ファイル | 内容 |
+|---|---|
+| `cost_decomposition_yearly.csv` | 費用変化の年次要因分解（数量効果・構成効果・価格効果） |
+| `cost_decomposition_cumulative.csv` | 同上の累計 |
+| `cost_total_with_procedure.csv` | 薬剤費＋手技料（G016算定回数×点数×10円）の治療総額 |
+| `cost_counterfactual_scenarios.csv` | 反実仮想（バイオシミラー非参入／薬価据置） |
+| `cost_biosimilar_regional_potential.csv` | BSシェアの地域差解消による追加削減余地 |
+| `cost_price_gap_sensitivity.csv` | 実勢価格乖離（0/5/10%）を仮定した感度分析 |
+
+要因分解は ΔC = 数量効果＋構成効果＋価格効果 として残差0で厳密に分解される。
+
+| 項 | 定義 |
+|---|---|
+| 数量効果 | (Q<sub>当年</sub> − Q<sub>前年</sub>) × p̄<sub>前年</sub> |
+| 構成効果 | Q<sub>当年</sub> × (Σ s<sub>i,当年</sub> p<sub>i,前年</sub> − p̄<sub>前年</sub>) |
+| 価格効果 | Σ q<sub>i,当年</sub> × (p<sub>i,当年</sub> − p<sub>i,前年</sub>) |
+
+新規収載薬は前年薬価が存在しないため当年薬価で代用し、参入の影響は構成効果に計上される。
+薬価×数量は**薬価基準額**であり実際の償還額ではない。転帰データがないため費用対効果分析は算出できない。
+手技料は G016算定回数 × 点数 × 10円。点数は年度で改定される（2015〜2023年度 580点、2024年度 600点）。
+
+> **⚠️ `cost_biosimilar_regional_potential.csv` は2026年8月に値が変わっている**
+> 旧出力は、`current_national_bs_share_pct`（シェア）と `additional_bs_switch_quantity`
+> （追加切替数量）で**分母が食い違っていた**。
+>
+> | 年度 | シェア列が示す分母 | 数量列が示す分母 | 差 |
+> |---|---:|---:|---:|
+> | 2022 | 152,702 | 158,072 | +5,369 |
+> | 2023 | 154,499 | 157,683 | +3,184 |
+> | 2024 | 150,115 | 145,054 | −5,061 |
+>
+> 再実装では都道府県別集計の合計に統一した（県別シェアの分母と揃えるため）。
+> その結果、追加切替数量と追加削減額が旧出力より **2022年度 −3.4% / 2023年度 −2.0% /
+> 2024年度 +3.8%** 変わっている。シェア列（P90・全国シェア）は2021〜2023年度で旧出力と完全一致。
+>
+> BSとの単価差は**先発の最高薬価（ルセンティス注射液10mg/mL）**との差を用いている。
+> BSはキット製剤なので、同じキットの先発と比べると単価差は約半分になる
+> （2024年度: 46,069円 vs 23,228円）。削減額の解釈に注意すること。
+
+### 3-8. G016 硝子体内注射（`03_解析結果/G016硝子体内注射/`）
+| ファイル | 内容 |
+|---|---|
+| `g016_national_trends.csv` / `g016_apc.csv` | 全国算定回数・人口10万対・APC（外来／入院／合計） |
+| `g016_prefecture_panel.csv` / `g016_prefecture_ranking.csv` | 都道府県別の算定回数・人口10万対・順位 |
+| `g016_geographic_disparity.csv` | Gini・CV・最大最小比・P90/P10 |
+| `g016_agesex_distribution.csv` / `g016_agesex_summary.csv` | 年齢階級×性別の分布と要約 |
+| `g016_vs_drug_validation.csv` | 薬剤数量との突合（「1バイアル＝1注射」の検証） |
+
+### 3-9. 図（`04_図表/plots/`）
 `product_trends.png` / `product_share_stacked.png` / `formulation_share_total.png` /
 `formulation_kit_share_by_molecule.png` / `biosimilar_share.png` /
 `agesex_pyramid_latest.png` / `age_distribution_heatmap.png` /
@@ -176,12 +270,17 @@ NDBオープンデータには処方科の情報がない。抗VEGF薬硝子体�
 
 ## 6. 主要な結果（zero補完・2024年度）
 
-- **抗VEGF薬合計 1,072,010本**（人口10万対865.9）、2014年度からのAPC **+12.31%/年**（p<0.001）
-- 製品別シェア: アイリーア2mgキット37.9%、アイリーア2mg注射液18.6%、バビースモ15.3%、
-  ラニビズマブBS 10.5%、アイリーア8mg 8.5%、ベオビュ5.5%
-- **薬剤費は年間約1,480億円**（薬価×数量）
-- **キット比率は2019年度17.6%→2022年度63.2%へ急伸**。2024年度は57.0%（注射液のみのアイリーア8mg参入による低下）
-- **ラニビズマブBSは2021年度0.3%→2024年度74.8%**。先発薬価換算との累積差は約103億円
+全国値は公表総計ベース（§5-2参照）。本フォルダは2024年度のみ公費レセプトを含む。
+
+- **抗VEGF薬合計 1,101,476本**（人口10万対889.7）、2014年度からのAPC **+11.39%/年**（p<0.001）
+- 製品別シェア: アイリーア2mgキット37.3%、アイリーア2mg注射液18.5%、バビースモ15.2%、
+  ラニビズマブBS 10.4%、アイリーア8mg 8.7%、ベオビュ5.7%
+- **薬剤費は年間約1,519億円**（薬価×数量）。手技料を含めた治療総額は約1,532億円で、**その95.8%が薬剤費**
+- **キット比率は2019年度17.8%→2022年度63.2%へ急伸**。2024年度は56.8%（注射液のみのアイリーア8mg参入による低下）
+- **ラニビズマブBSは2021年度2.9%→2024年度70.7%**。先発薬価換算との累積差は約113億円
 - 年齢: 近似平均年齢は74.8歳（2014）→75.6歳（2024）、75歳以上比率は51.9%→59.3%と高齢化。男性比率62.7%→58.0%
 - 地域格差: 抗VEGF薬合計のGiniは0.254（2014）→0.109（2024）と縮小。2024年度は長崎県が最多、沖縄県が最少で2.98倍
 - パネル回帰: 抗VEGF薬合計では有意な共変量なし。ラニビズマブ（先発＋BS）でのみ高齢化率が正で有意（p=0.032、within R²=0.233）
+- 医療費の要因分解（2014→2024累計）: **数量効果 +1,038億円 / 価格効果 −200億円 / 構成効果 +6億円**。
+  価格効果は2016年度（−112億円）と2022年度（−58億円）の薬価改定に集中。
+  構成効果は累計ほぼ中立だが**2024年度に+37億円へ反転**（高薬価のアイリーア8mg・バビースモへのシフト）

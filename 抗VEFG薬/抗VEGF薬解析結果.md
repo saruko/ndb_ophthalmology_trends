@@ -131,7 +131,7 @@ NDBの「後発品区分」列は本分類では**全品目`0`**であるため�
 **注目点**: ラニビズマブは先発＋BS合算では +1.42%（有意差なし）と「横ばい」に見えるが、
 **先発単独では −6.30%/年で減少**しており、BSがその減少を埋めている。合算したままでは実態が見えない。
 
-![製品別トレンド](processed/plots/product_trends.png)
+![製品別トレンド](04_図表/plots/product_trends.png)
 
 ---
 
@@ -171,7 +171,7 @@ NDBの「後発品区分」列は本分類では**全品目`0`**であるため�
 
 「–」は当該年度に収載がないもの。
 
-![製品別シェア](processed/plots/product_share_stacked.png)
+![製品別シェア](04_図表/plots/product_share_stacked.png)
 
 ### 3-3. 薬価の推移（円）
 
@@ -244,8 +244,8 @@ NDBの「後発品区分」列は本分類では**全品目`0`**であるため�
 **同一成分内では両剤ともキットが主流**。ラニビズマブ先発は発売2年で約70%まで一気に移行、
 アフリベルセプトは4年かけて66.9%と、より緩やかな移行パターンを示す。
 
-![剤形比率](processed/plots/formulation_share_total.png)
-![成分別キット比率](processed/plots/formulation_kit_share_by_molecule.png)
+![剤形比率](04_図表/plots/formulation_share_total.png)
+![成分別キット比率](04_図表/plots/formulation_kit_share_by_molecule.png)
 
 ### 4-3. 都道府県別のキット比率（2024年度・内訳ベース）
 
@@ -281,7 +281,7 @@ NDBの「後発品区分」列は本分類では**全品目`0`**であるため�
 **BSの伸びは先発からの置換であって市場拡大ではない**。
 先発はピークの183,682本（2019年度）から47,475本（2024年度）へ**74%減**。
 
-![先発vsBS](processed/plots/biosimilar_share.png)
+![先発vsBS](04_図表/plots/biosimilar_share.png)
 
 ### 5-2. 薬剤費への影響
 
@@ -336,7 +336,7 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 
 **75〜79歳がピーク**で、70歳以上が全体の75.6%を占める。
 
-![年齢性別ピラミッド](processed/plots/agesex_pyramid_latest.png)
+![年齢性別ピラミッド](04_図表/plots/agesex_pyramid_latest.png)
 
 ### 6-2. 経年変化
 
@@ -353,7 +353,7 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 一貫して男性優位だが、男性比率は62.7%→58.0%へ緩やかに低下しており、女性患者の相対的な増加がみられる。
 （男性優位はAMDの疫学的性差と整合する）
 
-![年齢構成比の推移](processed/plots/age_distribution_heatmap.png)
+![年齢構成比の推移](04_図表/plots/age_distribution_heatmap.png)
 
 ---
 
@@ -374,7 +374,7 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 
 長崎県は沖縄県の **2.98倍**。長崎県は11年間一貫して首位、沖縄県は2015年度以降一貫して最下位。
 
-![都道府県ランキング](processed/plots/prefecture_ranking_latest.png)
+![都道府県ランキング](04_図表/plots/prefecture_ranking_latest.png)
 
 ### 7-2. 地域格差指標の推移（抗VEGF薬合計）
 
@@ -405,7 +405,7 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 **新規薬剤ほど格差が大きい**（アイリーア8mg 0.298、ベオビュ 0.339）。導入初期の施設間差を反映している。
 ルセンティス先発のGini=0.608は、BS置換が進み残存数量が少ないために秘匿→0となる県が21県生じた影響であり、**過大評価である**。
 
-![Gini推移](processed/plots/gini_trends.png)
+![Gini推移](04_図表/plots/gini_trends.png)
 
 ### 7-4. 眼科医療資源との関連
 
@@ -568,7 +568,7 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 
 ## 10. 出力ファイル一覧
 
-解析の全出力は `processed/` 配下。集計元CSVは本フォルダ直下の
+解析の全出力は `03_解析結果/` 配下（テーマ別サブフォルダ）。図は `04_図表/plots/`。集計元CSVは `01_抽出データ/` の
 `ophthalmic_injection_prefecture.csv` / `ophthalmic_injection_agesex.csv`。
 
 | 区分 | 主なファイル |
@@ -593,6 +593,38 @@ BSの数量を先発薬価で換算した場合との差額を「削減額」と
 - `run_antivegf_pipeline.py` … 薬剤の解析
 - `analyze_g016.py` … G016の解析
 - `data/raw/ndb_g_chusha_koui/download_g_chusha_koui.py` … G注射の原データ取得
+
+---
+
+## 11. 論文用Figure一覧と作成用データソース
+
+allergy論文（`allergy_paper_draft_9agents.md`）のFigure構成をテンプレートとし、
+抗VEGF薬のデータ特性に合わせて改変した。**データは全年度「公費レセプトを含まない」で統一した `公費含まない/03_解析結果/` 配下のCSVを使用**。
+Excelファイル `公費含まない/04_図表/antivegf_paper_figures.xlsx` に各Figureのデータシートとチャートを格納している。
+
+### 生成手順
+
+```
+python build_paper_figures_xlsx.py
+```
+
+### Figure一覧
+
+| 図表 | 内容 | allergy対応 | データファイル | 使用列・フィルタ |
+|---|---|---|---|---|
+| **Fig 1A** | 年齢群別 処方数量（2024年度、抗VEGF合計、男女合算） | Fig 1A | `agesex_distribution_published_antivegf.csv` | year=2024, 男女合算；x=age_group, y=quantity |
+| **Fig 1B** | 性別×年齢群（2024年度、男女2系列） | Fig 1B | 同上 | year=2024, sex=男/女の2系列 |
+| **Fig 1C** | 年齢分布の経年シフト（2014 vs 2024、シェア比較） | Fig 2A | `agesex_distribution_comparable_antivegf.csv` | year=2014/2024, 男女合算；share_pct |
+| **Fig 2A** | 近似平均年齢・75歳以上比率・男性比率の推移 | Fig 2B | `agesex_summary_antivegf.csv` | year × mean_age_approx / share_75plus_pct / male_share_pct |
+| **Fig 2B** | 外来/入院比率の推移 | なし（独自） | `product_by_setting_antivegf.csv` | setting別に年度合算、入院比率 |
+| **Fig 3A** | 都道府県別 人口10万対ランキング（2024年度、横棒） | Fig 3A | `prefecture_per_capita_ranking_antivegf.csv` | 「2024年度_人口10万対」列、47都道府県 |
+| **Fig 3B** | 地域格差指標（Gini・CV）の経年推移 | なし（独自） | `geographic_disparity_antivegf.csv` | code=ANTI_VEGF_TOTAL；year × gini / cv |
+| **Fig 4A** | 成分別 処方数量推移（人口10万対、折れ線） | Fig 4A | `national_trends_antivegf.csv` | 全code；year × count_per_100k |
+| **Fig 4B** | 成分別シェア推移（積み上げ面グラフ） | Fig 4B | 同上 | share_of_antivegf_pct列 |
+| **Fig 5A** | 剤形比率の推移（注射液 vs キット、積み上げ棒） | Fig 5A | `formulation_total_antivegf.csv` | year × share_pct（formulation=注射液/キット） |
+| **Fig 5B** | バイオシミラーシェア推移（先発 vs BS） | Fig 5B | `biosimilar_national_share.csv` | year × share_pct（brand_type=先発/バイオシミラー） |
+| **Fig 5C** | 薬剤費推移と構成（製品別積み上げ棒） | なし（独自） | `product_trends_antivegf.csv` | year × cost列を製品別に集計、億円換算 |
+| **Suppl Fig** | G016算定回数 vs 抗VEGF薬数量の突合 | なし（独自） | `g016_vs_drug_validation.csv` | year × g016_procedures / antivegf_vials / antivegf_per_g016_pct |
 
 ---
 

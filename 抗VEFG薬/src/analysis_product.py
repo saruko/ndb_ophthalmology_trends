@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from drug_master import MOLECULE_NAMES
+from paths import input_path
 
 ANTI = "ANTI_VEGF"
 
@@ -192,9 +193,9 @@ def masking_qc(pref, agesex, output_dir, raw_dir):
     print("Computing masking QC...")
     rows = []
     for label, path, keys in [
-        ("都道府県版", os.path.join(raw_dir, "ophthalmic_injection_prefecture.csv"),
+        ("都道府県版", input_path(raw_dir, "ophthalmic_injection_prefecture.csv"),
          ["年度", "区分", "医薬品コード"]),
-        ("年齢性別版", os.path.join(raw_dir, "ophthalmic_injection_agesex.csv"),
+        ("年齢性別版", input_path(raw_dir, "ophthalmic_injection_agesex.csv"),
          ["年度", "区分", "医薬品コード"]),
     ]:
         raw = pd.read_csv(path, dtype={"医薬品コード": str})

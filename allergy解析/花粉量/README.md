@@ -30,6 +30,19 @@ pip install pandas pypdf pdfplumber openpyxl xlrd requests beautifulsoup4 lxml
 * **`local_pollen.py`**: 東京都健康安全研究センターのZIP/CSVデータのパーサー。
 * **`utils.py`**: 都道府県名の正規化（表記揺れ吸収）を行う共通関数群。
 
+### データ・作業フォルダ
+
+* **`output/`**: 集計結果CSV（`pollen_summary_2014_2024.csv` / `pollen_summary_standard.csv`）。
+* **`tmp/`**: ダウンロード・展開した生データ（東京都のZIP展開結果など）。再取得可能な作業領域。
+* **`scripts/`**: 収集元サイトの構造を調べるために書いた**一回きりの探索スクリプト15本**
+  （`check_*.py` / `parse_*.py` / `search_*.py`）。
+  当時どう調べたかの記録として残しているだけで、**そのままでは動かない**
+  （`npo_pollen` 等を親フォルダからimportしているため、実行するには
+  `PYTHONPATH` に親フォルダを通す必要がある）。本番の収集には使わない。
+
+> 本フォルダはNDB解析の**参考資料**であり、本体パイプラインからは参照されない。
+> 花粉飛散量と抗アレルギー点眼薬処方量の相関解析は未実施（今後の検討項目）。
+
 ---
 
 ## 使用方法

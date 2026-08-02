@@ -6,6 +6,7 @@ import pandas as pd
 # srcディレクトリをパスに追加してインポートを可能にする
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
+from paths import output_dir as processed_dir
 from preprocess_pterygium import preprocess_pterygium
 from analysis_pterygium import analyze_pterygium
 from visualization_pterygium import visualize_pterygium_all
@@ -111,7 +112,7 @@ def generate_summary_report(output_dir, imputation_strategy):
                 f.write(f" - {setting_str}:\n")
                 f.write(f"   * 変動係数 (CV): {row['cv']:.3f}\n")
                 f.write(f"   * ジニ係数 (Gini): {row['gini']:.3f}\n")
-                f.write(f"   * 最大/最小比: {row['max_to_min_ratio']:.2f}倍 (最小: {row['min_prefecture']} {row['min_rate']:.2f}件 / 最大: {row['max_prefecture']} {row['max_rate']:.2f}件)\n")
+                f.write(f"   * 最大/最小比: {row['max_to_min_ratio']:.3f}倍 (最小: {row['min_prefecture']} {row['min_rate']:.2f}件 / 最大: {row['max_prefecture']} {row['max_rate']:.2f}件)\n")
             f.write("\n")
             
     print(f"Summary report saved to {report_path}")
@@ -131,8 +132,8 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     raw_dir = os.path.join(base_dir, "../data/raw")
     covariate_path = os.path.join(base_dir, "../data/covariates/prefecture_covariates.csv")
-    output_dir = os.path.join(base_dir, "processed")
-    
+    output_dir = processed_dir()
+
     print("==================================================")
     print("      NDB 翼状片手術 解析パイプライン")
     print(f"      補完戦略: {args.imputation}")
@@ -167,6 +168,7 @@ def main():
     
     print("\n[SUCCESS] 翼状片解析パイプラインの実行が正常に完了しました！")
     print(f"結果出力先: {os.path.abspath(output_dir)}")
+    print("次に `python 翼状片解析/organize_outputs.py` を実行すると 01〜05 のフォルダへ振り分けられます。")
     print("==================================================")
 
 if __name__ == "__main__":

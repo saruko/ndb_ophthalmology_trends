@@ -10,6 +10,17 @@ def _fmt(x, digits=1):
     return f"{x:,.{digits}f}"
 
 
+def fmt_p(p):
+    """p値の表示。全解析共通の規則（README §4.3）: 3桁、0.001未満は <0.001。
+
+    3桁に丸めると p=1e-8 が 0.000 となり有意性情報が失われるため、
+    下限側は不等号で示す。CSVには生値が入っている。
+    """
+    if pd.isna(p):
+        return "n/a"
+    return "<0.001" if p < 0.001 else f"{p:.3f}"
+
+
 def generate_report(processed_dir, strategy, sensitivity=None):
     out = []
     w = out.append
@@ -52,7 +63,7 @@ def generate_report(processed_dir, strategy, sensitivity=None):
           f"n={int(r['n_years'])}):")
         w(f"   * APC: {_fmt(r['apc'], 2)}% "
           f"(95%CI: {_fmt(r['apc_low'], 2)}% ~ {_fmt(r['apc_high'], 2)}%) ({sig})")
-        w(f"   * p={r['p_value']:.4f} | R2={r['r2']:.4f}")
+        w(f"   * p={fmt_p(r['p_value'])} | R2={r['r2']:.4f}")
 
     w("")
     w(f"3. 製品別 処方数量・薬価・薬剤費（{y_last}年度）")
@@ -132,7 +143,7 @@ def generate_report(processed_dir, strategy, sensitivity=None):
         for _, r in g.iterrows():
             sig = "*" if r["p_value"] < 0.05 else " "
             w(f"   {sig} {r['variable']:<22} coef={_fmt(r['coefficient'], 3):>12} "
-              f"(p={r['p_value']:.4f})")
+              f"(p={fmt_p(r['p_value'])})")
 
     w("")
     w("9. 秘匿によるデータ欠損（QC）")

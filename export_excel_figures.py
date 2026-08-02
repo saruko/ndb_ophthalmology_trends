@@ -11,6 +11,7 @@ export_excel_figures.py
   Sheet5:  Spearman相関                -- データ
   Sheet6:  パネル回帰係数              -- データ＋棒グラフ
 """
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -19,14 +20,19 @@ from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.series import SeriesLabel
 from openpyxl.utils import get_column_letter
 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+from paths import find, output_dir  # noqa: E402
+
 sys.stdout.reconfigure(encoding='utf-8')
 
-proc = pd.read_csv('data/processed/ndb_processed_zero.csv', encoding='utf-8-sig')
-apc_lin = pd.read_csv('data/processed/national_apc_linear.csv', encoding='utf-8-sig')
-apc_jp = pd.read_csv('data/processed/national_apc_joinpoint.csv', encoding='utf-8-sig')
-disp = pd.read_csv('data/processed/geographic_disparity.csv', encoding='utf-8-sig')
-corr = pd.read_csv('data/processed/covariates_correlation.csv', encoding='utf-8-sig')
-reg = pd.read_csv('data/processed/panel_regression_summary.csv', encoding='utf-8-sig')
+OUT = output_dir()
+
+proc = pd.read_csv(find('ndb_processed_zero.csv'), encoding='utf-8-sig')
+apc_lin = pd.read_csv(find('national_apc_linear.csv'), encoding='utf-8-sig')
+apc_jp = pd.read_csv(find('national_apc_joinpoint.csv'), encoding='utf-8-sig')
+disp = pd.read_csv(find('geographic_disparity.csv'), encoding='utf-8-sig')
+corr = pd.read_csv(find('covariates_correlation.csv'), encoding='utf-8-sig')
+reg = pd.read_csv(find('panel_regression_summary.csv'), encoding='utf-8-sig')
 
 CODE_LABEL = {
     'J039-2': '抗VEGF薬注射',
@@ -203,7 +209,7 @@ for code in CODES:
 df_reg = pd.DataFrame(reg_rows)
 
 # ─── Excel出力（データ＋グラフ埋め込み） ───
-out_path = 'data/processed/figure_data_for_excel.xlsx'
+out_path = os.path.join(OUT, 'figure_data_for_excel.xlsx')
 with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
     # --- Sheet1: 全国トレンド ---
     df_trend.to_excel(writer, sheet_name='1_全国トレンド(縦)', index=False)
@@ -417,9 +423,9 @@ with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
 print(f'Excel出力完了（グラフ埋め込み済み）: {out_path}')
 
 # CSVも個別出力（必要な人向け）
-df_trend.to_csv('data/processed/fig1_national_trends.csv', index=False, encoding='utf-8-sig')
-df_apc.to_csv('data/processed/fig2_apc_results.csv', index=False, encoding='utf-8-sig')
-df_disp.to_csv('data/processed/fig3_geographic_disparity.csv', index=False, encoding='utf-8-sig')
-df_corr.to_csv('data/processed/fig5_spearman_correlation.csv', index=False, encoding='utf-8-sig')
-df_reg.to_csv('data/processed/fig6_panel_regression.csv', index=False, encoding='utf-8-sig')
+df_trend.to_csv(os.path.join(OUT, 'fig1_national_trends.csv'), index=False, encoding='utf-8-sig')
+df_apc.to_csv(os.path.join(OUT, 'fig2_apc_results.csv'), index=False, encoding='utf-8-sig')
+df_disp.to_csv(os.path.join(OUT, 'fig3_geographic_disparity.csv'), index=False, encoding='utf-8-sig')
+df_corr.to_csv(os.path.join(OUT, 'fig5_spearman_correlation.csv'), index=False, encoding='utf-8-sig')
+df_reg.to_csv(os.path.join(OUT, 'fig6_panel_regression.csv'), index=False, encoding='utf-8-sig')
 print('CSV個別出力完了 (fig1_*.csv - fig6_*.csv)')

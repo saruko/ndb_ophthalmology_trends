@@ -17,9 +17,10 @@ from scipy.stats import mannwhitneyu, ttest_ind
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 from drug_master import DRUG_MASTER  # noqa: E402
+from paths import input_path  # noqa: E402
 
-BASE = r"G:\マイドライブ\NDB_眼科診療トレンド解析_研究計画書"
-ANTIVEGF_DIR = os.path.join(BASE, "抗VEFG薬")
+ANTIVEGF_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE = os.path.dirname(ANTIVEGF_DIR)
 COVARIATES = os.path.join(BASE, "data", "covariates", "prefecture_covariates.csv")
 
 # 先行研究の地域区分（論文Methodsの定義をそのまま使用）
@@ -41,7 +42,7 @@ KABATA_AGENTS = {
 
 def load_drugs(data_dir):
     """薬剤の公表総計（全国）と都道府県内訳を読む。"""
-    path = os.path.join(data_dir, "ophthalmic_injection_prefecture.csv")
+    path = input_path(data_dir, "ophthalmic_injection_prefecture.csv")
     df = pd.read_csv(path, dtype={"医薬品コード": str})
     m = df["医薬品コード"].map(DRUG_MASTER)
     df["molecule"] = m.map(lambda x: x[1])
@@ -56,7 +57,7 @@ def load_drugs(data_dir):
 
 
 def load_g016(data_dir):
-    path = os.path.join(data_dir, "g016_prefecture.csv")
+    path = input_path(data_dir, "g016_prefecture.csv")
     df = pd.read_csv(path)
     df = df.rename(columns={"年度": "year", "区分": "setting", "都道府県": "prefecture"})
     df["count"] = pd.to_numeric(df["算定回数"], errors="coerce").fillna(0.0)

@@ -23,10 +23,13 @@ from preprocess_allergy import (  # noqa: E402
     MED_RELEASE_CODES, IMMUNO_CODES, classify_drug, clean_count_value,
 )
 
+from paths import (RAW_AGESEX_DIR, add_nokouhi_arg,  # noqa: E402
+                   nokouhi_from_argv, output_dir, raw_file)
+
 BASE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_RAW = os.path.join(BASE, "..", "data", "raw", "ndb_age_sex")
-PROCESSED = os.path.join(BASE, "processed")
-SUMMARY = os.path.join(BASE, "内容まとめ")
+DEFAULT_RAW = RAW_AGESEX_DIR
+NOKOUHI = nokouhi_from_argv()
+PROCESSED = output_dir(NOKOUHI)
 
 YEARS = range(2014, 2025)
 GROUPS = {
@@ -114,12 +117,13 @@ def main():
                     help="ndb_age_sex ディレクトリ")
     ap.add_argument("--imputation", default="zero",
                     choices=["zero", "five", "random", "upper"])
+    add_nokouhi_arg(ap)
     args = ap.parse_args()
 
     rows = []
     for year in YEARS:
-        gaiyo = os.path.join(args.raw_dir, f"ndb_gaiyo_agesex_{year}.xlsx")
-        chusha = os.path.join(args.raw_dir, f"ndb_chusha_agesex_{year}.xlsx")
+        gaiyo = raw_file("ndb_gaiyo_agesex", year, args.nokouhi, agesex=True)
+        chusha = raw_file("ndb_chusha_agesex", year, args.nokouhi, agesex=True)
         if os.path.exists(gaiyo):
             print(f"  {year} 外用薬 ...")
             rows += load_year(gaiyo, year, False, args.imputation)
@@ -147,11 +151,12 @@ def main():
         ["year", "code", "procedure_name", "sex", "age_group", "count", "count_raw"]]
     out = out.sort_values(["year", "code", "sex", "age_group"]).reset_index(drop=True)
 
-    for d in (PROCESSED, SUMMARY):
-        os.makedirs(d, exist_ok=True)
-        path = os.path.join(d, "ndb_allergy_age_sex_zero.csv")
-        out.to_csv(path, index=False, encoding="utf-8-sig")
-        print(f"wrote {path} ({len(out)} rows)")
+    # 以前は 内容まとめ/ にも同じCSVを書いていたが、同フォルダは旧版/ へ退避した
+    # スナップショットであり出力先ではないため、一次出力先のみに書き出す
+    os.makedirs(PROCESSED, exist_ok=True)
+    path = os.path.join(PROCESSED, "ndb_allergy_age_sex_zero.csv")
+    out.to_csv(path, index=False, encoding="utf-8-sig")
+    print(f"wrote {path} ({len(out)} rows)")
 
 
 if __name__ == "__main__":

@@ -24,8 +24,12 @@ import pandas as pd
 
 # ── 設定 ──
 
-RAW_DIR = "allergy解析/data/population_raw"
-OUT_DIR = "allergy解析/processed"
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
+from paths import BASE_DIR, nokouhi_from_argv, output_dir  # noqa: E402
+
+RAW_DIR = os.path.join(BASE_DIR, "data", "population_raw")
+# 人口は公費の有無に依らないが、出力先は解析側と揃える
+OUT_DIR = output_dir(nokouhi_from_argv())
 
 # statInfId一覧（全てe-Stat: https://www.e-stat.go.jp/ ）
 # 人口推計 → 全国：年齢（各歳），男女別人口（各年10月1日現在）

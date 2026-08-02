@@ -25,12 +25,20 @@ p値のみ、生値を保持したうえで表示用文字列 p_value_display �
 """
 import os
 import shutil
+import sys
+
 import pandas as pd
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-PROCESSED = os.path.join(BASE, "processed")
-TARGET_DIRS = [os.path.join(BASE, "論文に使うCSV"),
-               os.path.join(BASE, "論文に使うファイルたち")]
+sys.path.append(os.path.join(BASE, "src"))
+from paths import nokouhi_from_argv, output_dir  # noqa: E402
+
+NOKOUHI = nokouhi_from_argv()
+PROCESSED = output_dir(NOKOUHI)
+# 旧 論文に使うCSV/ は 旧版/ へ退避したスナップショットなので対象外。
+# generate_paper_csvs.py のステージング出力に対して丸め列を付与する。
+TARGET_DIRS = [os.environ.get("PAPER_CSV_OUT_DIR")
+               or os.path.join(PROCESSED, "論文用CSV")]
 
 # 列名の完全一致で決まるもの
 DIGITS_EXACT = {

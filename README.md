@@ -30,46 +30,83 @@
 
 ```text
 NDB_眼科診療トレンド解析_研究計画書/
-├── run_pipeline.py         # パイプラインの一括実行スクリプト
+├── run_pipeline.py         # 本体パイプラインの一括実行スクリプト
 ├── build_real_covariates.py # 公的統計（e-Stat）からの共変量データの構築スクリプト
 ├── generate_summary_report.py # 解析結果をテキスト形式のサマリーにまとめるスクリプト
-├── generate_mock_data.py   # テスト用ダミーデータおよび共変量データの生成
-├── generate_manuscript_docx.py # 論文ドラフト（Word形式）を解析結果CSVから自動的に生成・更新するスクリプト
-├── requirements.txt        # 依存ライブラリ一覧
+├── generate_manuscript_docx.py # 論文ドラフト（Word形式）を解析結果CSVから生成・更新
+├── export_excel_figures.py # 解析結果をExcelグラフ用に整形して出力
+├── requirements.txt        # 依存ライブラリ一覧（全解析共通）
 ├── README.md               # 本ドキュメント
+├── CLAUDE.md               # コーディング方針
+├── analysis_results.md     # 統計解析結果の詳細サマリー
+├── analysis_results_for_manuscript.md # 同じ結果を論文執筆用に整形したもの
 ├── revision_summary.md     # 改定内容および結果CSV利用ガイド
 ├── configs/
 │   └── ndb_mapping.json    # 各年度ごとのExcelファイルの列名・シートマッピング定義
 ├── data/
 │   ├── raw/                # 各回NDBの生データExcel (ndb_shujutsu_*.xlsx, ndb_chusha_*.xlsx等)
-│   ├── covariates/         # 共変量データ (prefecture_covariates.csv: 実データ / _DUMMY.csv: テスト用)
+│   │   └── ndb_2024_nokouhi/ # 2024年度「公費レセプトを含まない」版
+│   ├── covariates/         # 共変量データ (prefecture_covariates.csv)
 │   ├── real_covariates/    # 公的統計の生ファイル (e-Statからダウンロードした元データ)
 │   └── processed/          # 前処理および統計解析結果の出力先
-│       ├── plots/          # 生成された可視化グラフ画像 (.png)
-│       └── *.csv / *.txt   # 解析統計値 (APC, ジニ係数, パネル回帰レポート等)
-├── allergy解析/            # サブ解析: 抗アレルギー点眼薬のトレンド・地域格差解析
-│   ├── run_allergy_pipeline.py
-│   ├── age_sex_analysis_results.md  # 年齢別処方量解析の結果サマリー（追加解析）
-│   ├── generate_paper_csvs.py       # 論文 Fig/Table 用CSVの生成
-│   ├── add_rounded_columns.py       # 論文用CSVに丸め列を併記
-│   ├── allergy_paper_draft_sato_style.md  # 論文下書き（Sato et al. 形式）
-│   ├── src/               # 前処理・解析・可視化モジュール
-│   │   └── preprocess_age_sex_allergy.py  # 年齢・性別別データパーサー
-│   ├── 論文に使うファイルたち/  # 論文用 Fig/Table CSV・xlsx・docx
-│   └── processed/         # 解析結果出力
-│       └── ndb_allergy_age_sex_zero.csv   # 年齢・性別別処方量（追加解析）
-├── 翼状片解析/             # サブ解析: 翼状片手術（K224）の地域偏在・紫外線関連解析
-│   ├── run_pterygium_pipeline.py
-│   └── 紫外線/            # 気象庁UV・Open-Meteo日射量データ収集
-├── 秘匿バイアス解析/       # 秘匿セル（10件未満）が格差指標に与えるバイアスの検証
-│   └── scripts/           # 識別区間・打切りMLE・ベイズ多重代入
-├── 眼腫瘍解析/             # サブ解析: 眼腫瘍手術の年齢階級別・Poisson回帰解析
-│   └── scripts/           # 年齢層別化・rate換算・trend testスクリプト
-└── src/
-    ├── preprocess.py       # データの前処理・クレンジング・マージ (縦持ち変換、秘匿値補完)
-    ├── analysis.py         # 統計解析 (APC計算、ジニ係数/CV算出、相関分析、固定効果パネル回帰)
-    └── visualization.py    # グラフ描画 (経年トレンド、格差指標推移、相関散布図、ランキング)
+│       ├── 01_中間データ/  # 前処理済みの統合データ（ndb_processed_*.csv 等）
+│       ├── 02_解析結果/    # 全国トレンド / 都道府県_地域格差 / 論文図表データ
+│       ├── 03_図表/plots/  # 可視化グラフ画像 (.png)・Excel
+│       └── sub_analysis/   # K280・K268サブ解析（親と同名のCSVがあるので分離を維持）
+├── 05_論文成果物/          # 本体解析の論文原稿・骨子・研究計画書
+│   ├── NDB_EN_ClinicalOphthalmology.docx / NDB_JP_*.docx / ドラフト
+│   ├── paper_outline_IMRAD.md      # 論文骨格案（IMRAD構成）
+│   ├── 解析結果変更.md / 先行研究と差別化ポイント.txt
+│   ├── NDB_眼科診療トレンド解析_研究計画書.docx
+│   └── 参考文献/           # Wada 2023 / Kabata 2026 / Shiga 2026 の PDF
+├── 旧版/                   # 本プロジェクトと無関係な残置ファイル（test_2017.csv 等）
+├── notebooks/              # （空）
+├── src/
+│   ├── preprocess.py       # データの前処理・クレンジング・マージ (縦持ち変換、秘匿値補完)
+│   ├── analysis.py         # 統計解析 (APC計算、ジニ係数/CV算出、相関分析、固定効果パネル回帰)
+│   └── visualization.py    # グラフ描画 (経年トレンド、格差指標推移、相関散布図、ランキング)
+│
+├── allergy解析/            # サブ解析: 抗アレルギー点眼薬（主解析は公費含まない版）
+├── 抗VEFG薬/               # サブ解析: 抗VEGF薬（硝子体注射液）
+├── 翼状片解析/             # サブ解析: 翼状片手術（K224）の地域偏在・紫外線関連
+├── 眼腫瘍解析/             # サブ解析: 眼腫瘍手術の年齢階級別・Poisson回帰
+└── 秘匿バイアス解析/       # 秘匿セルが格差指標に与えるバイアスの検証
 ```
+
+サブ解析は `01_抽出データ / 02_中間データ / 03_解析結果 / 04_図表` の番号付き構成に統一し、
+各フォルダに `organize_outputs.py`（一次出力の振り分け。**ファイルは削除しない**）と
+`src/paths.py`（フォルダ構成の一元管理）を置いている。詳細は各フォルダの README を参照。
+`秘匿バイアス解析/` のみ従来構成のまま。
+
+本体解析も同じ方式だが、**番号付きフォルダは `data/processed/` の中に置く**。
+`.gitignore` が `data/` を「NDB・患者データの流出防止」目的で丸ごと除外しているため、
+解析結果を `data/` の外へ出すとこの保護が外れてしまうからである。
+
+```bash
+python run_pipeline.py --imputation zero
+```
+
+```bash
+python generate_summary_report.py
+```
+
+```bash
+python export_excel_figures.py
+```
+
+```bash
+python organize_outputs.py
+```
+
+`organize_outputs.py` は**下流スクリプトまで走らせた後に最後に1回**実行する。
+`generate_summary_report.py` と `export_excel_figures.py` も `data/processed/` 直下へ
+出力するため、パイプライン直後に整理してしまうと、その後の7ファイル
+（`analysis_summary_report.txt` と `fig1〜fig6_*.csv`）が直下に取り残される。
+
+`organize_outputs.py` は何度実行しても同じ結果になる。`data/processed/` 直下（＝今回の実行が
+生成した最新の出力）は整理先の古い同名ファイルを置き換えるが、それ以外は上書きせず据え置く。
+読み込み側（`generate_summary_report.py` / `export_excel_figures.py` /
+`generate_manuscript_docx.py`）は `src/paths.py` の `find()` を使うので、整理前でも整理後でも動く。
 
 > **⚠️ 年齢・性別別パーサーが現存しません**
 > `src/preprocess_age_sex.py` および `allergy解析/src/preprocess_age_sex_allergy.py`
@@ -136,24 +173,42 @@ python generate_manuscript_docx.py
 - **`allergy解析/processed/`**: 抗アレルギー点眼薬の全解析結果（詳細は [allergy解析/README.md](allergy解析/README.md) 参照）
 - **`翼状片解析/processed/`**: 翼状片手術（K224）の地域偏在解析（詳細は [翼状片解析/README.md](翼状片解析/README.md) 参照）
 - **`秘匿バイアス解析/`**: 秘匿セルが格差指標に与えるバイアスの検証（識別区間・打切りMLE・ベイズ多重代入）
-- **`眼腫瘍解析/`**: 眼腫瘍手術の年齢階級別・Poisson回帰解析（詳細は [眼腫瘍解析/scripts/README.md](眼腫瘍解析/scripts/README.md) 参照）
+- **`眼腫瘍解析/`**: 眼腫瘍手術の年齢階級別・Poisson回帰解析（詳細は [眼腫瘍解析/README.md](眼腫瘍解析/README.md) 参照）
 
 ### 4.3 数値の丸め規則（全解析共通）
 
 出力値の桁数は解析スクリプト全体で統一している。
 
+基準は [allergy解析/README.md](allergy解析/README.md) セクション15（公費含まない版）である。
+
 | 対象 | 桁数 |
 |---|---|
-| 件数・人口10万対（率） | 整数 |
+| 件数 | 整数 |
+| 人口10万対（率） | **有効数字3桁以上を保てる桁数**（下記） |
 | 割合・シェア（%） | 小数1桁 |
+| 割合（比率 0–1） | 小数3桁 |
 | 比・CV・Gini・回帰係数・標準誤差・t値 | 小数3桁 |
 | APC（%） | 小数2桁 |
 | R² | 小数4桁 |
+| 加重平均年齢 | 小数1桁 |
 | p値 | 表示3桁、0.001未満は `<0.001`（CSVでは生値を保持） |
 
-p値のみ、3桁に丸めると p=1e-8 が 0.000 となり有意性情報が失われるため、CSVでは生値を保持し
-表示用の文字列を別列（`p_value_display`）に併記する。詳細は
-[allergy解析/README.md](allergy解析/README.md) セクション15を参照。
+**率の桁数は解析によって異なる。** 率の大きさが解析ごとに5桁以上違うため、
+一律に整数化すると小さい率の情報が失われる。
+
+| 解析 | 人口10万対の範囲（2024年度） | 表示桁数 |
+|---|---|---|
+| allergy解析（点眼薬） | 1.1万 〜 979万 | 整数 |
+| 翼状片解析（K224） | 3.7 〜 91 | 小数2桁 |
+| 眼腫瘍解析（16術式） | 0.0 〜 3.6 | 小数2桁 |
+
+allergy解析の「整数」は率が10⁴〜10⁶オーダーであることに依存した規則であり、
+翼状片・眼腫瘍にそのまま適用すると（例: 入院 3.67 → 4）有効数字が1〜2桁に落ちる。
+**率は有効数字3桁以上を保てる桁数を選ぶ**、を共通の規則とする。
+
+p値は、3桁に丸めると p=1e-8 が 0.000 となり有意性情報が失われるため、CSVでは生値を保持し
+表示用の文字列を別列（`p_value_display`）に併記する（allergy解析のみ実装。他解析はCSVが生値、
+レポート表示のみ3桁 / `<0.001`）。
 
 > **⚠️ CSVをExcelで開く際の注意:** 年齢区分の `5-9` `10-14` は、ExcelでCSVを開いて保存すると
 > 日付（`5月9日` `10月14日`）に変換され破損する。この破損は下流で例外を出さずフィルタが
@@ -199,9 +254,99 @@ NDB年齢別ファイル（`data/raw/ndb_age_sex/`）を用いた追加解析。
 第11回NDBオープンデータ（2024年度分）からは、従来の個別Excelファイルへの直接リンクが廃止され、大カテゴリ別のZIPファイルに統合されて提供されるようになりました。これに伴い、本プロジェクトでは以下の通りデータを取り扱っています。
 
 ### データソース
-過去の時系列データとの整合性維持のため、いずれも「公費レセプトを含む」データセットを使用しています。
-* **医科診療行為（算定回数）**: [001712211.zip](https://www.mhlw.go.jp/content/12400000/001712211.zip)
-* **処方薬（数量）**: [001711931.zip](https://www.mhlw.go.jp/content/12400000/001711931.zip)
+* **医科診療行為（算定回数）**: [001712211.zip](https://www.mhlw.go.jp/content/12400000/001712211.zip)（公費レセプトを**含む**）
+* **処方薬（数量）**: [001711931.zip](https://www.mhlw.go.jp/content/12400000/001711931.zip)（公費レセプトを**含む**）
+* **処方薬 公費レセプトを含まないデータ**: `001711930.zip` → `data/raw/ndb_2024_nokouhi/`
+
+> **⚠️ 「過去の時系列データとの整合性維持のため公費含むを使用」という以前の記述は誤りだった**
+> 第1回〜第10回（2014〜2023年度）は**公費レセプトを含まない集計のみ**が公表されている。
+> 2024年度だけ「含む」版を使うと、**時系列に定義の不連続が生じる**。
+> 整合性を保つには「含まない」版を使う必要がある。詳細は §6-1。
+
+### 6-1. 公費レセプトの取り扱い（重要）
+
+第11回（2024年度）から公費レセプトを含む集計が標準になり、第10回までと同様の
+「含まない」集計表も併せて公表された（第11回解説編 p.5）。
+「公費レセプト」＝社会保険・国民健康保険による請求がなく、公費負担医療のみによる請求のレセプト。
+
+**2024年度の標準ファイルが公費を含むことは実測で確認済み**（G016硝子体内注射の算定回数）。
+
+| | 2023年度 | 2024年度 |
+|---|---:|---:|
+| 標準ファイル | 1,039,173 | 1,104,430 |
+| 公費含まない版 | 1,039,173 | 1,067,660 |
+| 差 | 0 | **+36,770（+3.44%）** |
+
+2023年度は両者が完全一致する（＝2023年度以前は「含まない」版しか存在しない）。
+
+#### 解析別の対応状況
+
+| 解析 | 対象ファイル | 公費含まない版 | 状態 |
+|---|---|---|---|
+| allergy解析 | 外用薬 | あり | ✅ `--nokouhi`（既定）で主解析。公費含む版は `公費含む/` に分離 |
+| 抗VEFG薬 | 注射薬・G016 | あり | ✅ `公費含まない/` に分離。2023年度以前は両版で完全一致を確認 |
+| シクロスポリンとタクロリムス | 外用薬 | あり | ✅ 全年度で「含まない」に統一 |
+| **メイン（J039-2 注射）** | 注射薬 | **あり（未使用）** | ⚠️ 2024年度のみ公費含む。**+3.45%** の上振れ |
+| **メイン（K259/K268/K280/K282）** | 手術 | **未入手** | ⚠️ 2024年度のみ公費含む |
+| **翼状片解析（K224）** | 手術 | **未入手** | ⚠️ 同上 |
+| **眼腫瘍解析** | 手術（性年齢別） | **未入手** | ⚠️ 同上 |
+| **秘匿バイアス解析** | 手術・処置 | **未入手** | ⚠️ 同上（メインのローダーを共用） |
+
+`data/raw/ndb_2024_nokouhi/` には**処方薬（外用・注射）とG016診療行為のみ**が置かれており、
+**手術（shujutsu）・処置（shochi）の「含まない」版は未入手**である。
+
+- メインの J039-2 は `ndb_chusha_2024_nokouhi.xlsx` が既にあるので切り替え可能
+- 手術系は厚労省から「含まない」版を取得する必要がある
+  （診療行為の含まない版は現に存在する＝G016で入手済みのため、K手術も公表されている可能性が高い）
+
+**手術系の2024年度の値は、2023年度以前と定義が異なる。**
+
+#### 6-2. 対応方針（2026-08-02 決定）
+
+**当面は現状のデータのまま運用し、論文の Limitations に明記する。**
+手術・処置の「公費レセプトを含まない」版の取得と再実行は後回しとする。
+
+対象は下表の3解析＋秘匿バイアス解析。**2024年度のみ約 +3.4% の上振れ**を含む。
+
+| 影響を受ける解析 | 対象コード | 影響 |
+|---|---|---|
+| メイン | J039-2 / K259 / K268 / K280 / K282 | 2024年度の算定回数が約+3.4%上振れ |
+| 翼状片解析 | K224 | 同上。2024年度の人口10万対・地域格差指標 |
+| 眼腫瘍解析 | 16術式 | 同上。Poisson trend test の APC が上方バイアス |
+| 秘匿バイアス解析 | 手術・処置 | メインのローダーを共用するため同じ |
+
+**影響しない解析**（公費含まない版で統一済み）: allergy解析、抗VEFG薬、
+シクロスポリンとタクロリムス。
+
+#### 6-3. Limitations 記載文（そのまま使える）
+
+**日本語**
+
+> 本研究で用いたNDBオープンデータは、第11回（2024年度）から公費レセプトを含む集計が
+> 標準となった一方、第1回〜第10回（2014〜2023年度）は公費レセプトを含まない集計のみが
+> 公表されている。本解析の手術・処置データは、2024年度のみ公費レセプトを含む集計を
+> 用いているため、時系列に定義上の不連続が存在する。同一年度の診療行為データで両集計を
+> 比較したところ、2024年度の算定回数は公費レセプトを含む場合に3.4%大きかった
+> （硝子体内注射 G016: 1,067,660回 → 1,104,430回）。したがって2024年度の値および
+> 2024年度を含む年平均変化率（APC）は、真の増加をおよそ3%程度過大に評価している
+> 可能性がある。なお2023年度以前は両集計が完全に一致することを確認している。
+
+**English**
+
+> The NDB Open Data used in this study changed its aggregation basis in the 11th release
+> (FY2024): claims covered solely by public expenditure programs, which had been excluded
+> through the 10th release (FY2014–FY2023), are included in the standard FY2024 tables.
+> Because the procedure-level data in this analysis use the standard FY2024 tables, a
+> definitional discontinuity exists in the time series. Comparing the two aggregations for
+> the same fiscal year, FY2024 counts were 3.4% higher when publicly funded claims were
+> included (intravitreal injection G016: 1,067,660 vs 1,104,430). Accordingly, the FY2024
+> values and any annual percent change (APC) spanning FY2024 may overestimate the true
+> increase by approximately 3%. Figures for FY2023 and earlier were confirmed to be
+> identical between the two aggregations.
+
+引用元: 第11回NDBオープンデータ解説編 p.5（公費レセプトを含まない集計表の併記）、
+同 p.52（「公費レセプト」の定義＝社会保険・国民健康保険による請求がなく、
+公費負担医療のみによる請求のレセプト）。
 
 ### 抽出とリネームマッピング
 各ZIPを解凍後、以下の通りファイルを抽出・リネームして [data/raw/](file:///f:/マイドライブ/NDB_眼科診療トレンド解析_研究計画書/data/raw) 配下に配置しています。

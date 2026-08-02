@@ -16,7 +16,7 @@ from pathlib import Path
 
 import openpyxl
 
-BASE = Path(r"G:\マイドライブ\NDB_眼科診療トレンド解析_研究計画書")
+BASE = Path(__file__).resolve().parents[1]
 PREF_DIR = BASE / "data" / "raw"
 AGESEX_DIR = BASE / "data" / "raw" / "ndb_age_sex"
 NOKOUHI_DIR = BASE / "data" / "raw" / "ndb_2024_nokouhi"

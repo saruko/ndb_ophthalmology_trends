@@ -15,8 +15,12 @@ from docx.oxml.ns import qn
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 BASE = Path(__file__).resolve().parent
-PROCESSED = BASE / "processed"
-DOCX_PATH = BASE / "Anti-allergic eye drop market_modified.docx"
+sys.path.append(str(BASE / "src"))
+from paths import ARCHIVE_SUBDIR, nokouhi_from_argv, output_dir  # noqa: E402
+
+PROCESSED = Path(output_dir(nokouhi_from_argv()))
+# 対象のdocxは初期版であり 旧版/ へ退避済み
+DOCX_PATH = BASE / ARCHIVE_SUBDIR / "Anti-allergic eye drop market_modified.docx"
 
 # ---------------------------------------------------------------------------
 # Load CSV data
