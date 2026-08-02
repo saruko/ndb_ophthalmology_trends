@@ -1,0 +1,33 @@
+                          PanelOLS Estimation Summary                           
+================================================================================
+Dep. Variable:          d_LATANOPROST   R-squared:                        0.0716
+Estimator:                   PanelOLS   R-squared (Between):              0.7545
+No. Observations:                 423   R-squared (Within):               0.1724
+Date:                Sun, Aug 02 2026   R-squared (Overall):              0.2102
+Time:                        23:20:17   Log-likelihood                    1474.5
+Cov. Estimator:             Clustered                                           
+                                        F-statistic:                      9.3844
+Entities:                          47   P-value                           0.0000
+Avg Obs:                       9.0000   Distribution:                   F(3,365)
+Min Obs:                       9.0000                                           
+Max Obs:                       9.0000   F-statistic (robust):             6.3733
+                                        P-value                           0.0003
+Time periods:                       9   Distribution:                   F(3,365)
+Avg Obs:                       47.000                                           
+Min Obs:                       47.000                                           
+Max Obs:                       47.000                                           
+                                                                                
+                               Parameter Estimates                               
+=================================================================================
+               Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
+---------------------------------------------------------------------------------
+d_TRAVOPROST     -0.6425     0.2848    -2.2559     0.0247     -1.2026     -0.0824
+d_TAFLUPROST     -0.7472     0.1934    -3.8635     0.0001     -1.1276     -0.3669
+d_BIMATOPROST     0.1469     0.2405     0.6111     0.5415     -0.3259      0.6198
+=================================================================================
+
+F-test for Poolability: 10.904
+P-value: 0.0000
+Distribution: F(54,365)
+
+Included effects: Entity, Time

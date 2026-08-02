@@ -1,0 +1,33 @@
+                          PanelOLS Estimation Summary                           
+================================================================================
+Dep. Variable:         count_per_100k   R-squared:                        0.0031
+Estimator:                   PanelOLS   R-squared (Between):              0.3385
+No. Observations:                 517   R-squared (Within):               0.0702
+Date:                Sun, Aug 02 2026   R-squared (Overall):              0.3283
+Time:                        23:20:16   Log-likelihood                   -4648.6
+Cov. Estimator:             Clustered                                           
+                                        F-statistic:                      0.4730
+Entities:                          47   P-value                           0.7012
+Avg Obs:                       11.000   Distribution:                   F(3,457)
+Min Obs:                       11.000                                           
+Max Obs:                       11.000   F-statistic (robust):             0.1124
+                                        P-value                           0.9529
+Time periods:                      11   Distribution:                   F(3,457)
+Avg Obs:                       47.000                                           
+Min Obs:                       47.000                                           
+Max Obs:                       47.000                                           
+                                                                                
+                                  Parameter Estimates                                  
+=======================================================================================
+                     Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
+---------------------------------------------------------------------------------------
+aging_rate           2.462e+04  5.065e+04     0.4861     0.6272  -7.492e+04   1.242e+05
+docs_per_100k           132.48     634.42     0.2088     0.8347     -1114.3      1379.2
+facilities_per_100k    -277.84     1064.9    -0.2609     0.7943     -2370.5      1814.8
+=======================================================================================
+
+F-test for Poolability: 113.19
+P-value: 0.0000
+Distribution: F(56,457)
+
+Included effects: Entity, Time
