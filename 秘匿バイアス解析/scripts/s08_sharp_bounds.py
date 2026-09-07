@@ -120,12 +120,12 @@ def run():
         grows.append({"code": code, "year": year,
                       "gini_sharp_lower": gmin, "gini_sharp_upper": gmax,
                       "gini_sharp_width": gmax - gmin})
-    gdf = pd.DataFrame(grows).round(4)
+    gdf = pd.DataFrame(grows).round(3)
     gdf.to_csv(os.path.join(OUT_DIR, "sharp_bounds_gini.csv"),
                index=False, encoding="utf-8-sig")
     ep_g = pd.read_csv(os.path.join(OUT_DIR, "bounds_disparity.csv"))
     cmp = gdf.merge(ep_g[["code", "year", "gini_width"]], on=["code", "year"])
-    summary = cmp.groupby("code")[["gini_sharp_width", "gini_width"]].mean().round(4)
+    summary = cmp.groupby("code")[["gini_sharp_width", "gini_width"]].mean().round(3)
     print("\n=== Gini: 座標降下区間幅 vs 端点代入区間幅（コード平均） ===")
     print(summary.to_string())
 

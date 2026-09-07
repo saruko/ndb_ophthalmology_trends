@@ -2,35 +2,45 @@
 
 ## Commands
 
+すべて**リポジトリ直下**から実行する。本体解析のスクリプトは `data/raw` などを
+カレントディレクトリ相対で参照する。
+
 ### 1. 依存ライブラリのインストール
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. パイプラインの実行
+### 2. 本体解析パイプラインの実行
 ```bash
 # 10件未満の秘匿データを「0」で補完して解析（デフォルト）
-python run_pipeline.py --imputation zero
+python 本体解析/run_pipeline.py --imputation zero
 
 # 10件未満の秘匿データを「5」で補完して解析
-python run_pipeline.py --imputation five
+python 本体解析/run_pipeline.py --imputation five
 
 # 10件未満の秘匿データを「1〜9の乱数」で補完して解析
-python run_pipeline.py --imputation random
+python 本体解析/run_pipeline.py --imputation random
 ```
 
 ### 3. 共変量（実データ）の再構築
 e-Stat（政府統計の総合窓口）から人口推計・医師統計・医療施設調査をダウンロードし、
 `data/covariates/prefecture_covariates.csv` を再生成します。
 ```bash
-python build_real_covariates.py
+python 本体解析/build_real_covariates.py
 ```
 
-### 4. 模擬データの完全生成（検証・テスト用）
-※注意: `data/raw/` 配下にある実データが上書きされます。
-```bash
-python generate_mock_data.py
-```
+### 4. テーマ別解析
+各テーマフォルダの README.md を参照（`抗アレルギー点眼解析/`, `翼状片解析/`, `眼腫瘍解析/`,
+`緑内障点眼解析/`, `緑内障手術解析/`, `抗VEGF薬解析/`, `薬事工業生産動態統計/`,
+`秘匿バイアス解析/`, `未掲載薬剤解析/`）。
+
+## フォルダ構成の約束
+
+- テーマごとにトップフォルダを1つ。内部は `01_抽出データ / 02_中間データ / 03_解析結果 / 04_図表 / 05_論文成果物` + `src/`。
+- 本体解析のみ出力を `data/processed/` に置く（`.gitignore` の `data/` 除外で流出防止するため）。
+- 旧版は `99_アーカイブ/` へ。削除しない。
+- テーマ横断の資料・参考文献は `00_共通/`、外部統計の生データは `data/external/`。
+- 各テーマの説明は README.md 1本にまとめる（claude.md は作らない）。
 
 ---
 

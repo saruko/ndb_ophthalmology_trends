@@ -2,6 +2,8 @@
 .venv/
 __pycache__/
 *.pyc
+*.log
+*_backup.py
 
 # IDE and tool cache
 .claude/
@@ -10,10 +12,62 @@ __pycache__/
 .vscode/
 .idea/
 
-# Word documents and PDFs (Manuscripts and References)
+# Word documents, PowerPoint, PDFs, and rich text
 *.docx
 *.pdf
 *.gdoc
+*.pptx
+
+# 学会関連すべて（抄録、演題登録、ポスター、スライド等）非公開
+**/07_学会案/
+**/学会案/
+**/学会*/
+*abstract*
+*演題*
+*poster*
+*ポスター*
+
+# 論文原稿・ドラフト・提出用成果物（非公開）
+**/05_論文成果物/
+**/08_免疫抑制薬サブ解析/
+**/99_アーカイブ/
+**/99_旧版*/
+**/投稿用*/
+**/投稿改定ver/
+*論文下書き*
+*論文ドラフト*
+*論文案*
+*paper_draft*
+*draft*.md
+*figure_legends*
+*IMRAD*
+*差別化*
+*トレンド*.md
+*まとめ*.md
+NDB抗アレルギー解析_*.docx
+
+# Markdown ドキュメントは README.md, CLAUDE.md 以外非公開（原稿・レポート漏洩防止）
+*.md
+!README.md
+!CLAUDE.md
+
+# 成果物画像・プロット（すべて非公開）
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.tif
+*.tiff
+**/jma_images/
+**/plots/
+
+# 解析結果・出力ディレクトリ（非公開）
+**/03_解析結果/
+**/processed/
+
+# レポート・ログ・テキスト（requirements.txt 以外非公開）
+*.txt
+!requirements.txt
 
 # References directories
 **/参考文献/
@@ -34,6 +88,5 @@ data/
 .env
 *.local
 
-# Images and plots
-**/jma_images/
-**/plots/
+# Data availability 用の切り出し
+公開用_ndb_allergy_eyedrops/

@@ -164,7 +164,7 @@ def run():
                   f"(95%CI {r['apc_low']:.2f}, {r['apc_high']:.2f}) "
                   f"censored={dc['is_censored'].mean():.1%} conv={r['converged']}")
 
-    out = pd.DataFrame(rows).round(4)
+    out = pd.DataFrame(rows).round(3)
     out.to_csv(os.path.join(OUT_DIR, "censored_mle_apc.csv"), index=False, encoding="utf-8-sig")
     print(f"\nsaved: censored_mle_apc.csv")
     return out

@@ -76,7 +76,7 @@ def run():
              gini_bias_sd=("gini_bias", "std"),
              apc_bias_mean=("apc_bias", "mean"),
              apc_bias_sd=("apc_bias", "std"))
-        .round(4)
+        .round(3)
     )
     summ.to_csv(os.path.join(OUT_DIR, "artificial_censoring_summary.csv"), encoding="utf-8-sig")
     print(summ.to_string())

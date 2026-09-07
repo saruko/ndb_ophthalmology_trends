@@ -83,7 +83,7 @@ def run():
              gini_rmse=("gini_bias", lambda x: np.sqrt((x ** 2).mean())),
              apc_bias_mean=("apc_bias", "mean"),
              apc_rmse=("apc_bias", lambda x: np.sqrt((x ** 2).mean())))
-        .round(4)
+        .round(3)
     )
     summ.to_csv(os.path.join(OUT_DIR, "experiment_mle_summary.csv"), encoding="utf-8-sig")
     print(summ.to_string())
